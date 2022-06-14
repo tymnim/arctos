@@ -17,8 +17,19 @@ function reactiveState(reactiveVar) {
     },
     function set(value) {
       reactiveVar.set(value);
+    },
+    function fset(func) {
+      reactiveVar.set(func(reactiveVar.value));
     }
   ];
+}
+
+export function nonreactive(func) {
+  const scope = Tracker.currentScope;
+  Tracker.currentScope = null;
+  const result = func();
+  Tracker.currentScope = scope;
+  return result;
 }
 
 export function reactive(variable) {
