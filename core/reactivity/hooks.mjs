@@ -1,5 +1,5 @@
 
-import { Tracker, ReactiveVar, Scope } from ".core.mjs";
+import { Tracker, ReactiveVar, Scope } from "./core.mjs";
 
 function reactiveFunction(func) {
   const currentScope = new Scope(func);
