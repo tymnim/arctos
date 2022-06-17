@@ -1,7 +1,7 @@
 
 import { Tracker, ReactiveVar, Scope } from "./core.mjs";
 
-function reactiveFunction(func) {
+export function reactiveFunction(func) {
   const currentScope = new Scope(func);
   Tracker.currentScope = currentScope;
   // NOTE: initial run; registers dependencies
@@ -10,7 +10,7 @@ function reactiveFunction(func) {
   return currentScope;
 }
 
-function reactiveState(reactiveVar) {
+export function reactiveState(reactiveVar) {
   return [
     function get() {
       return reactiveVar.get();

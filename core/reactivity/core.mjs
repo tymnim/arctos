@@ -66,6 +66,13 @@ export class Scope {
     this.triggeredBy.clear();
   }
 
+  die() {
+    this.stoped = true;
+    // TODO: implement
+    //       remove
+    //       should get rid of all of the dependencies and remove itself from all of the deps
+  }
+
   trigger(reactiveVar) {
     if (this.stopped) {
       return;
