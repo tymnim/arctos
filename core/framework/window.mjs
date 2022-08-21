@@ -1,10 +1,4 @@
 
-const w = window;
-
-export const Window = {
-  
-}
-
 function body(doc) {
   const domBody = doc.body;
   return {
