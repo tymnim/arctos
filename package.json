@@ -1,0 +1,15 @@
+{
+  "name": "js-framework",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node tester.mjs test",
+    "codehawk": "codehawk ./core"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "codehawk-cli": "^10.0.1"
+  }
+}
