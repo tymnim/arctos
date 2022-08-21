@@ -5,25 +5,8 @@
  * 2. components - a way to combine elements
 */
 
-import { Node as SSRNode, TextNode as SSRTextNode } from "./ssr.mjs";
+import { createElement, createTextNode, Node, Text } from "./createElement.mjs";
 import { reactiveFunction } from "../../core/reactivity/hooks.mjs";
-
-const { createElement, createTextNode, Node } = (function() {
-  const isSSR = global && !global.document && !global.window;
-  if (isSSR) {
-    return {
-      createElement: tag => new SSRNode(tag),
-      createTextNode: value => new SSRTextNode(value),
-      Node: SSRNode
-    };
-  }
-  return {
-    createElement: document.createElement.bind(document),
-    createTextNode: document.createTextNode.bind(document),
-    // NOTE: Node is global in browser
-    Node
-  }
-})();
 
 const PropertyNotAttributeList = ["checked"];
 
@@ -102,7 +85,6 @@ function replaceChildrenOf(node, children) {
     const kids = normalize(renderChild(child));
     allKids = allKids.concat(kids.flat());
   }
-  // console.log(allKids);
 
   if (allKids.some(kid => kid instanceof Promise)) {
     return new Promise(resolve => {
