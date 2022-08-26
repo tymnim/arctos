@@ -4,12 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node tester.mjs test",
+    "test": "node_modules/unit-tester/test.mjs test",
     "codehawk": "codehawk ./core"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "codehawk-cli": "^10.0.1"
+    "codehawk-cli": "^10.0.1",
+    "unit-tester": "^1.0.3"
   }
 }
