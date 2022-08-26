@@ -14,37 +14,47 @@ const files = filePath ? [filePath] : await readDir(dirpath, /\.test\./);
     return;
   }
 
+  let failures = [];
+
   for (let file of files) {
-    const testCases = (await import(file)).default;
-    console.log("_".repeat(96));
-    console.log("\x1b[36m%s\x1b[0m", `\t${file}`);
-    const { failed } = await exec(testCases, file);
-    if (failed.length) {
-      console.log("\n\x1b[31m%s\x1b[0m", `\t\t SOME TESTS FAILED =(\n`)
-      failed.forEach(fail => console.log("‼️  \x1b[31m%s\x1b[0m", fail))
+    try {
+      const testCases = (await import(file)).default;
+      console.log("_".repeat(96));
+      console.log("\x1b[36m%s\x1b[0m", `\t${file}`);
+      const { failed } = await exec(testCases, file);
+      failures = failures.concat(failed);
     }
-    else {
-      console.log("\n\x1b[32m%s\x1b[0m", `\t\t ✅|All Tests Passed|✅`)
+    catch(e) {
+      failures.push(`${file} ->`);
+      failures.push(e);
     }
+  }
+
+  if (failures.length) {
+    console.log("\n\x1b[31m%s\x1b[0m", `\t\t SOME TESTS FAILED =(\n`)
+    failures.forEach(fail => console.log("‼️  \x1b[31m%s\x1b[0m", fail))
+  }
+  else {
+    console.log("\n\x1b[32m%s\x1b[0m", `\t\t ✅|All Tests Passed|✅`)
   }
 }
 
-async function exec(testCases, scope, depth = 0, currentLog = logger(0), results = { failed: [] }) {
+async function exec(testCases, scope, depth = 1, currentLog = logger(0), results = { failed: [] }) {
   for (let testCase of testCases) {
-    const log = logger(depth + 1);
+    const log = logger(depth);
     if (testCase instanceof Array) {
       currentLog(`🧪 ${testCase.name}`);
-      await exec(testCase, scope + ` -> ${testCase.name}`, depth, log, results);
+      await exec(testCase, scope + ` -> ${testCase.name}`, depth + 1, log, results);
       continue;
     }
     try {
       await testCase.exec();
-      log(`✅  -> ${testCase.name}`);
+      currentLog(`✅  -> ${testCase.name}`);
     }
     catch(e) {
       results.failed.push(scope + ` -> ${testCase.name}`);
-      log(`‼️   -> ${testCase.name}\n\t\t(${e.message})`);
-      if (e.code !== "ERR_ASSERTION") {
+      currentLog(`‼️   -> ${testCase.name}\n\t\t(${e?.message})`);
+      if (e?.code !== "ERR_ASSERTION") {
         console.error(e);
       }
     }
