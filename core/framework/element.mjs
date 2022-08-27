@@ -16,7 +16,7 @@ export function element(tagName, [attributes = {}, children = []], existingNode)
   applyEvents(node, attributes.on);
   applyAttributes(node, attributes);
   const content = replaceChildrenOf(node, normalize(children));
-  // console.log(content);
+
   if (content instanceof Promise) {
     return new Promise(async resolve => {
       await content;
@@ -120,7 +120,7 @@ function renderChild(child) {
     return renderChild(child());
   }
   if (child instanceof Promise) {
-    return new Promsie(async resolve => { resolve(renderChild(await child)) });
+    return new Promise(async resolve => { resolve(renderChild(await child)) });
   }
   if (child instanceof Array) {
     return child.map(kid => renderChild(kid))
