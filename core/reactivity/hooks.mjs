@@ -1,6 +1,8 @@
 
 import { Tracker, ReactiveVar, Scope } from "./core.mjs";
 
+const NONE = Symbol("none");
+
 export function reactiveFunction(func) {
   const currentScope = new Scope(func);
   Tracker.currentScope = currentScope;
@@ -19,7 +21,19 @@ export function reactiveState(reactiveVar) {
       reactiveVar.set(value);
     },
     function fset(func) {
-      reactiveVar.set(func(reactiveVar.value));
+      // NOTE: none is normally not used. May return it back if do not want to trigger updates.
+      // Usage case: you have an array of unique things in your array and you want to perform
+      //             verification that the new item is unique or any other validation.
+      // Code:
+      //  setSomething((someThings, none) =>
+      //    someThings.includes(thing) ? none : someThings.concat(thing)
+      //  );
+      // Code example is a little silly, but it maybe used for all kinds of functionality and
+      // passing NONE allows to manually optimize your code
+      const result = func(reactiveVar.value, NONE);
+      if (result !== NONE) {
+        reactiveVar.set(result);
+      }
     }
   ];
 }
