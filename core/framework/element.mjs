@@ -6,6 +6,8 @@
 */
 
 import { createElement, createTextNode, Node, Text } from "./createElement.mjs";
+import { normalize } from "./utils.mjs";
+
 import { reactiveFunction } from "../../core/reactivity/hooks.mjs";
 
 const PropertyNotAttributeList = ["checked"];
@@ -15,11 +17,13 @@ export function element(tagName, [attributes = {}, children = []], existingNode)
 
   applyEvents(node, attributes.on);
   applyAttributes(node, attributes);
-  const content = replaceChildrenOf(node, normalize(children));
+  const { space } = reactiveFunction((scope) => {
+    scope.space.content = replaceChildrenOf(node, normalize(children));
+  });
 
-  if (content instanceof Promise) {
+  if (space.content instanceof Promise) {
     return new Promise(async resolve => {
-      await content;
+      await space.content;
       resolve(node);
     });
   }
@@ -74,12 +78,7 @@ function parseAttribute(attributes = [], [name, value]) {
   return attributes.concat([[name, value]]);
 }
 
-function normalize(children) {
-  return (children instanceof Array ? children : [children])
-}
-
 function replaceChildrenOf(node, children) {
-  while (node.firstChild) { node.removeChild(node.lastChild) }
   let allKids = [];
   for (let child of children) {
     const kids = normalize(renderChild(child));
@@ -89,12 +88,14 @@ function replaceChildrenOf(node, children) {
   if (allKids.some(kid => kid instanceof Promise)) {
     return new Promise(resolve => {
       Promise.all(allKids).then(kids => {
+        while (node.firstChild) { node.removeChild(node.lastChild) }
         node.appendChild(...kids)
         resolve(node);
       });
     });
   }
 
+  while (node.firstChild) { node.removeChild(node.lastChild) }
   node.appendChild(...allKids);
   return node;
 }

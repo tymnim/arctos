@@ -24,3 +24,15 @@ export function main(...args) {
 export function img(...args) {
   return element("img", args);
 }
+
+export function ul(...args) {
+  return element("ul", args);
+}
+
+export function ol(...args) {
+  return element("ol", args);
+}
+
+export function li(...args) {
+  return element("li", args);
+}
