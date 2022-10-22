@@ -89,14 +89,14 @@ function replaceChildrenOf(node, children) {
     return new Promise(resolve => {
       Promise.all(allKids).then(kids => {
         while (node.firstChild) { node.removeChild(node.lastChild) }
-        node.appendChild(...kids)
+        node.append(...kids)
         resolve(node);
       });
     });
   }
 
   while (node.firstChild) { node.removeChild(node.lastChild) }
-  node.appendChild(...allKids);
+  node.append(...allKids);
   return node;
 }
 

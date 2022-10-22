@@ -46,7 +46,13 @@ export class Node {
     this.#parentElement = self;
   }
 
-  appendChild(...children) {
+  appendChild(child) {
+    this.#children = this.#children.concat(child);
+    child.setParent(this);
+    return this;
+  }
+
+  append(...children) {
     this.#children = this.#children.concat(children);
     children.forEach(child => child.setParent(this));
     return this;

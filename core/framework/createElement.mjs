@@ -6,8 +6,11 @@
 
 import { Node as SSRNode, TextNode as SSRTextNode } from "./ssr.mjs";
 
-export const { createElement, createTextNode, Node, Text } = (function() {
-  const isSSR = global && !global.document && !global.window;
+const nodeGlobal = typeof global !== "undefined" && global;
+const browserGlobal = typeof window !== "undefined" && window;
+
+export const { createElement, createTextNode, Node, Text } = (function(global) {
+  const isSSR = (global && !global.document && !global.window) ? true : false;
   if (isSSR) {
     return {
       createElement: tag => new SSRNode(tag),
@@ -20,10 +23,10 @@ export const { createElement, createTextNode, Node, Text } = (function() {
     createElement: document.createElement.bind(document),
     createTextNode: document.createTextNode.bind(document),
     // NOTE: Node and Text are global in browser
-    Node,
-    Text
+    Node: global.Node,
+    Text: global.Text
   }
-})();
+})(nodeGlobal || browserGlobal);
 
 export default { createElement, createTextNode, Node, Text };
 
