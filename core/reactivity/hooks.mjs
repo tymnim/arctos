@@ -3,12 +3,16 @@ import { Tracker, ReactiveVar, Scope } from "./core.mjs";
 
 const NONE = Symbol("none");
 
-export function reactiveFunction(func) {
+export function reactiveFunction(func, ignoreAsync = false) {
   const currentScope = new Scope(func);
   Tracker.currentScope = currentScope;
   // NOTE: initial run; registers dependencies
-  currentScope.execute();
+  const ret = currentScope.execute();
   Tracker.currentScope = null;
+  if (ret instanceof Promise && !ignoreAsync) {
+    return new Promise(resolve => ret.then(() => resolve(currentScope)));
+  }
+
   return currentScope;
 }
 
@@ -18,7 +22,7 @@ export function reactiveState(reactiveVar) {
       return reactiveVar.get();
     },
     function set(value) {
-      reactiveVar.set(value);
+      return reactiveVar.set(value);
     },
     function fset(func) {
       // NOTE: none is normally not used. May return it back if do not want to trigger updates.
@@ -32,7 +36,7 @@ export function reactiveState(reactiveVar) {
       // passing NONE allows to manually optimize your code
       const result = func(reactiveVar.value, NONE);
       if (result !== NONE) {
-        reactiveVar.set(result);
+        return reactiveVar.set(result);
       }
     }
   ];

@@ -1,29 +1,40 @@
 
 export const Tracker = {
-  scheduledJobs: new Set(),
+  scheduledJobs: new Map(),
   jobsTimeoutId: null,
   scheduleJob: (scope) => {
     if (!Tracker.jobsTimeoutId) {
       Tracker.jobsTimeoutId = setTimeout(Tracker.executeScheduledJobs);
     }
+    const scheduledJob = Tracker.scheduledJobs.get(scope);
+    if (scheduledJob) {
+      return scheduledJob;
+    }
 
-    Tracker.scheduledJobs.add(scope);
+    let resolveJob;
+    const job = new Promise((resolve, reject) => {
+      resolveJob = resolve;
+    });
+    job.execute = async () => {
+      await scope.execute();
+      resolveJob();
+    }
+
+    Tracker.scheduledJobs.set(scope, job);
+    return job;
   },
   executeScheduledJobs: () => {
-    // TODO: think if replacing the Set is the right decision.
-    //       The following scenario possible. Scopes to execute modify variable that triggers one of the queued scopes.
-    //       This way that scope will execute twice where the second exec will be useless because it will be the same data.
-    const scheduledJobs = Tracker.scheduledJobs;
+    const jobs = Tracker.scheduledJobs;
 
     Tracker.jobsTimeoutId = null;
-    // NOTE: replacing it with a new set, in case any job will schedule more jobs
-    Tracker.scheduledJobs = new Set();
 
-    scheduledJobs.forEach(job => {
-      job.execute();
+    // NOTE: not waiting for any jobs to finish; we care only to trigger them;
+    //       if something changes in the future; this is the place to modify it
+    //       Promise.all(scheduledJobs.map(job => job()))
+    [...jobs.entries()].forEach(async ([scope, job]) => {
+      await job.execute();
+      jobs.delete(scope);
     });
-
-    scheduledJobs.clear();
   }
 };
 
@@ -66,7 +77,14 @@ export class Scope {
     }
     this.timesRun ++;
 
-    this.callback(this);
+    const ret = this.callback(this);
+    if (ret instanceof Promise) {
+      return new Promise(async resolve => {
+        await ret;
+        this.triggeredBy.clear();
+        resolve();
+      });
+    }
     this.triggeredBy.clear();
   }
 
@@ -85,7 +103,7 @@ export class Scope {
       return;
     }
     this.triggeredBy.add(reactiveVar);
-    Tracker.scheduleJob(this);
+    return Tracker.scheduleJob(this);
   }
 }
 
@@ -101,9 +119,11 @@ export class ReactiveVar {
     }
     return this.value;
   }
+  // NOTE: #set can be optionaly awaited for all dependencies to execute.
   set(value) {
     this.value = value;
-    this.deps.forEach(dep => dep.trigger(this));
+    const deps = [...this.deps].map(dep => dep.trigger(this));
+    return Promise.all(deps);
   }
 }
 
