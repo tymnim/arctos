@@ -42,7 +42,26 @@ export class Node {
     return this.#parentElement;
   }
 
+  get previousSibling() {
+    if (this.#parentElement) {
+      return this.#parentElement.childNodes[this.#parentElement.childNodes.indexOf(this) - 1];
+    }
+  }
+
+  get nextSibling() {
+    if (this.#parentElement) {
+      return this.#parentElement.childNodes[this.#parentElement.childNodes.indexOf(this) + 1];
+    }
+  }
+
+  get childNodes() {
+    return this.#children;
+  }
+
   setParent(self) {
+    if (this.#parentElement) {
+      this.parentElement.removeChild(this);
+    }
     this.#parentElement = self;
   }
 
@@ -58,13 +77,23 @@ export class Node {
     return this;
   }
 
-  removeChild(...children) {
-    children.forEach(child => {
-      const index = this.#children.indexOf(child);
-      if (index >= 0) {
-        this.#children.splice(index, 1);
-      }
-    });
+  insertBefore(node, child) {
+    const index = this.#children.indexOf(child);
+
+    if (index >= 0) {
+      this.#children = this.#children.slice(0, index).concat(node, this.#children.slice(index));
+    }
+    else {
+      this.#children.push(node);
+    }
+    return node;
+  }
+
+  removeChild(child) {
+    const index = this.#children.indexOf(child);
+    if (index >= 0) {
+      this.#children.splice(index, 1);
+    }
   }
 
   setAttribute(name, value) {
