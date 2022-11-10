@@ -1,44 +1,45 @@
 
-import { reactiveFunction } from "/core/reactivity/hooks.mjs";
+import { reactiveFunction } from "../reactivity/hooks.mjs";
+import { normalize, unwrap } from "./utils.mjs";
+
+function replace(oldNodes, newNodes) {
+  const lastNode = oldNodes[oldNodes.length - 1];
+  const parent = lastNode.parentElement;
+  if (parent) {
+    const nextNode = lastNode.nextSibling;
+    oldNodes.forEach(node => parent.removeChild(node));
+    newNodes.forEach(node => parent.insertBefore(node, nextNode));
+  }
+  return newNodes;
+}
+
 
 export function component(func) {
   const self = (...contextData) => {
-    return new Promise((resolve, reject) => {
-      // console.log({contextData});
-      const instance = {
-        contextData,
-        template: self,
-      };
-      instance.dom = instance.dom = func(...contextData);
-      resolve(instance);
-      return instance;
-      // instance.scope = reactiveFunction(scope => {
-      //   console.log("inside of reactive scope");
-      //   // CHECK: I think since we set dom inside of this anyways. it's
-      //   //        less expencive to check for it instead of firstRun
-      //   if (/*scope.firstRun*/ !instance.dom) {
-      //     // NOTE: running for the first time. We want to initial render dom.
-      //     console.log("creating new instance", contextData);
-      //     instance.dom = func(...contextData);
-      //     resolve(instance);
-      //     return instance;
-      //   }
-      //   // NOTE: if it made here, means some reactive variable in the contextData has changed
-      //   // TODO: ask scope what it was triggered by and provide only that data to the func
-      //   console.log("reusing old instance", contextData);
-      //   func(...contextData, instance.dom);
-      // });
+    return new Promise(async resolve => {
+      await reactiveFunction(async scope => {
+        const nodes = await Promise.all(normalize(func(...contextData)));
+        if (!scope.space.nodes) {
+          scope.space.nodes = nodes;
+          const nodeOrNodes = unwrap(nodes);
+          await self._rendered(nodeOrNodes, contextData);
+          resolve(nodeOrNodes);
+        }
+        else {
+          scope.space.nodes = replace(scope.space.nodes, nodes);
+        }
+      });
     });
   }
 
   self._renderedListeners = [];
 
-  self._rendered = async (instance) => {
+  self._rendered = async (instance, contextData) => {
     let listenerResult = [instance.dom, instance.contextData];
     // NOTE: chaining then statements based on returns of previous then statement
     for (let listener of self._renderedListeners) {
       // NOTE: if listener returned no result we want to keep the previous one.
-      listenerResult = [await listener(...listenerResult)] ?? listenerResult;
+      listenerResult = (await listener(...listenerResult)) ?? listenerResult;
     }
   };
 
