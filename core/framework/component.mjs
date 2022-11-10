@@ -35,7 +35,7 @@ export function component(func) {
   self._renderedListeners = [];
 
   self._rendered = async (instance, contextData) => {
-    let listenerResult = [instance.dom, instance.contextData];
+    let listenerResult = [instance, contextData];
     // NOTE: chaining then statements based on returns of previous then statement
     for (let listener of self._renderedListeners) {
       // NOTE: if listener returned no result we want to keep the previous one.
