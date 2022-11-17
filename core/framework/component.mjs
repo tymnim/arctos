@@ -1,4 +1,3 @@
-
 import { reactiveFunction } from "../reactivity/hooks.mjs";
 import { normalize, unwrap } from "./utils.mjs";
 
@@ -13,16 +12,16 @@ function replace(oldNodes, newNodes) {
   return newNodes;
 }
 
-
 export function component(func) {
   const self = (...contextData) => {
-    return new Promise(async resolve => {
-      await reactiveFunction(async scope => {
+    return new Promise(resolve => {
+      reactiveFunction(async scope => {
         const nodes = await Promise.all(normalize(func(...contextData)));
         if (!scope.space.nodes) {
           scope.space.nodes = nodes;
           const nodeOrNodes = unwrap(nodes);
           await self._rendered(nodeOrNodes, contextData);
+
           resolve(nodeOrNodes);
         }
         else {
