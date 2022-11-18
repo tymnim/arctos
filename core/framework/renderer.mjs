@@ -5,9 +5,8 @@ const isSSR = typeof global !== "undefined" && !global.document && !global.windo
 
 async function renderer(...components) {
   for (let i in await Promise.all(components)) {
-    const lastChild = this.lastChild;
-    const instance = await components[i];
-    this.appendChild(instance);
+    const component = components[i] instanceof Function ? components[i]() : components[i];
+    this.appendChild(await component);
   }
 }
 
