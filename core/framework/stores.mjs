@@ -1,5 +1,5 @@
 
-import { reactive, reactiveState } from "/core/reactivity/hooks.mjs";
+import { reactive, reactiveState } from "../reactivity/hooks.mjs";
 
 export function store(uid, defaultValue) {
   const value = JSON.parse(window.localStorage.getItem(uid) || null) ?? defaultValue;
