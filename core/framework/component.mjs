@@ -20,6 +20,8 @@ export function component(func) {
         if (!scope.space.nodes) {
           scope.space.nodes = nodes;
           const nodeOrNodes = unwrap(nodes);
+          // TODO: rendered actually should be called not when component is done creating,
+          //       but when it is done appending into its parent
           await self._rendered(nodeOrNodes, contextData);
 
           resolve(nodeOrNodes);
