@@ -12,10 +12,6 @@ function replace(oldNodes, newNodes) {
   return newNodes;
 }
 
-function uid(seed) {
-  return seed.toString(36).substring(2);
-}
-
 export function component(func) {
   const self = (...contextData) => {
     return new Promise(resolve => {
@@ -59,17 +55,6 @@ export function component(func) {
     // listener(self.currentData);
     return self;
   };
-
-  self.css = src => {
-    const file = fetch(src)
-    .then(res => res.text())
-    .then(css => {
-      const style = document.createElement("style");
-      style.textContent = css;
-      document.head.appendChild(style);
-    });
-    return self;
-  }
 
   return self;
 }

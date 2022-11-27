@@ -4,3 +4,4 @@ export { render, mount } from "./core/framework/renderer.mjs";
 export * from "./core/framework/elements.mjs";
 export { reactive, nonreactive } from "./core/reactivity/hooks.mjs";
 export { store, useStore } from "./core/framework/stores.mjs";
+export { use as importCssFrom } from "./core/framework/cssParser.mjs";
