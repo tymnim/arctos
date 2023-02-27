@@ -1,6 +1,6 @@
 
 import { div, span, input, ul, li, ol } from "../core/framework/elements.mjs";
-import { reactive } from "../core/reactivity/hooks.mjs";
+import { atom } from "atomi";
 import assert from "assert";
 import { Tests, Test } from "unit-tester";
 
@@ -45,7 +45,7 @@ const spanTests = Tests("<span>",
     assert.equal("<span>hello world</span>", sp.toString());
   }),
   Test("reactive argument update", async () => {
-    const [spanClass, setSpanClass] = reactive("there-span");
+    const [spanClass, setSpanClass] = atom("there-span");
     const sp = span({ class: spanClass });
     assert.equal(`<span class="there-span"></span>`, sp.toString());
     setSpanClass("their-span");
@@ -56,7 +56,7 @@ const spanTests = Tests("<span>",
 
 const inputTests = Tests("<input>",
   Test("reactive value update", async () => {
-    const [value, setValue] = reactive("");
+    const [value, setValue] = atom("");
     const inputElement = input({ value });
     assert.equal(inputElement.toString(), `<input value="">`);
     setValue("hello");
@@ -65,7 +65,7 @@ const inputTests = Tests("<input>",
 
   }),
   Test("[type='checkbox']", async () => {
-    const [checked, setChecked] = reactive(false);
+    const [checked, setChecked] = atom(false);
     const inputElement = input({ type: "checkbox", checked: checked });
     assert.equal(inputElement.toString(), `<input type="checkbox" checked="false">`);
     setChecked(true);
@@ -98,7 +98,7 @@ export default [
       assert.equal(list.toString(), "<ol><li>1</li><li>2</li><li>3</li></ol>");
     }),
     Test("list with reactive children (append, remove children)", async () => {
-      const [children, setChildren] = reactive([1, 2, 3]);
+      const [children, setChildren] = atom([1, 2, 3]);
       const list = await ol({}, () => children().map(number => li({}, number.toString())));
       assert.equal(list.toString(), "<ol><li>1</li><li>2</li><li>3</li></ol>");
       setChildren([1, 2, 3, 4]);

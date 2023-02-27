@@ -1,16 +1,18 @@
 {
   "name": "alt-html",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "",
-  "main": "index.js",
+  "main": "index.mjs",
   "scripts": {
-    "test": "node_modules/unit-tester/test.mjs test",
-    "codehawk": "codehawk ./core"
+    "test": "node_modules/unit-tester/test.mjs test"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "codehawk-cli": "^10.0.1",
     "unit-tester": "^1.0.3"
+  },
+  "dependencies": {
+    "atomi": "^0.0.3"
   }
 }

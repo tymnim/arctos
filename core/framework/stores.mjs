@@ -1,9 +1,9 @@
 
-import { reactive, reactiveState } from "../reactivity/hooks.mjs";
+import { reactive, atom } from "atomi";
 
 export function store(uid, defaultValue) {
   const value = JSON.parse(window.localStorage.getItem(uid) || null) ?? defaultValue;
-  const reactiveVar = new reactive(value);
+  const reactiveVar = new atom(value);
   reactive(scope => {
     const value = reactiveVar.get();
     if (!scope.firstRun) {
@@ -14,5 +14,5 @@ export function store(uid, defaultValue) {
 }
 
 export function useStore(store) {
-  return reactiveState(store);
+  return atom(store);
 }

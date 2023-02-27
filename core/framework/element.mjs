@@ -8,7 +8,7 @@
 import { createElement, createTextNode, Node, Text } from "./createElement.mjs";
 import { normalize } from "./utils.mjs";
 
-import { reactiveFunction } from "../../core/reactivity/hooks.mjs";
+import { reactive } from "atomi";
 
 const PropertyNotAttributeList = ["checked"];
 
@@ -17,7 +17,7 @@ export function element(tagName, [attributes = {}, children = []], existingNode)
 
   applyEvents(node, attributes.on);
   applyAttributes(node, attributes);
-  const { space } = reactiveFunction((scope) => {
+  const { space } = reactive((scope) => {
     scope.space.content = replaceChildrenOf(node, normalize(children));
   });
 
@@ -52,7 +52,7 @@ function applyAttribute(node, attr, value) {
 }
 
 function bindAttribute(node, attr, value) {
-  reactiveFunction(scope => {
+  reactive(scope => {
     applyAttribute(node, attr, value)//.then(() => {;
       // NOTE: if after function execution scope did not register any dependencies,
       //       then there's none. We want just to forget about it.
