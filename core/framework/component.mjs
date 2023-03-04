@@ -1,5 +1,26 @@
-import { reactiveFunction } from "../reactivity/hooks.mjs";
+import { reactive } from "atomi";
 import { normalize, unwrap } from "./utils.mjs";
+import { isSSR } from "./renderer.mjs";
+
+const onRendered = Symbol("rendered");
+
+function flattenTree(node) {
+  if (node.childNodes.length) {
+    return [node, ...Array.from(node.childNodes).map(flattenTree)].flat()
+  }
+  return [node];
+}
+
+if (! isSSR) {
+  const observer = new MutationObserver(mutations => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach(node => {
+        flattenTree(node).forEach(node => node[onRendered]?.());
+      });
+    });
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+}
 
 function replace(oldNodes, newNodes) {
   const lastNode = oldNodes[oldNodes.length - 1];
@@ -12,19 +33,34 @@ function replace(oldNodes, newNodes) {
   return newNodes;
 }
 
+function addRenderedHandler(self, nodes, contextData) {
+  // doing nothing is using ssr
+  // TODO: figure out a way how to call it when it's rendered on the client side.
+  if (isSSR) {
+    return; //self._rendered(nodeOrNodes, contextData);
+  }
+
+  let rendered = false;
+  const renderedCallback = () => {
+    if (!rendered) {
+      self._rendered(unwrap(nodes), contextData);
+    }
+  }
+  nodes.forEach(node => node[onRendered] = renderedCallback);
+}
+
 export function component(func) {
   const self = (...contextData) => {
     return new Promise(resolve => {
-      reactiveFunction(async scope => {
+      reactive(async scope => {
         const nodes = await Promise.all(normalize(func(...contextData)));
         if (!scope.space.nodes) {
           scope.space.nodes = nodes;
-          const nodeOrNodes = unwrap(nodes);
           // TODO: rendered actually should be called not when component is done creating,
           //       but when it is done appending into its parent
-          await self._rendered(nodeOrNodes, contextData);
+          await addRenderedHandler(self, nodes, contextData);
 
-          resolve(nodeOrNodes);
+          resolve(unwrap(nodes));
         }
         else {
           scope.space.nodes = replace(scope.space.nodes, nodes);

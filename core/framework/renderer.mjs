@@ -3,11 +3,11 @@ import { normalize } from "./utils.mjs";
 
 export const render = Symbol("renderer");
 
-const isSSR = typeof global !== "undefined" && !global.document && !global.window;
+export const isSSR = typeof global !== "undefined" && !global.document && !global.window;
 
 async function renderer(...components) {
   for (let component of components) {
-    const c = component instanceof Promise ? await component : component;
+    // const c = component instanceof Promise ? await component : component;
     const elements = await (component instanceof Function ? component() : component);
     (await Promise.all(normalize(elements))).forEach(element => this.appendChild(element))
   }

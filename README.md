@@ -6,7 +6,7 @@ JavaScript framework to render some interactive html in the browser and on the s
 
 ```js
 // Creating reactive variable using hooks
-const [email, setEmail] = reactive("");
+const [email, setEmail] = atom("");
 // Creating an input element
 const inputForm = input({ value: email, on: { input(e) { setEmail(inputForm.value) } } });
 // Adding element to our body. Normally this would be done to the "app" function
@@ -133,7 +133,7 @@ Reactivity is sincerely trying to be simple, but it is for you to judge. Basic c
 ```js
 import { input, div } from "/path/to/module/index.mjs";
 // reactive variable
-const [count, setCount] = reactive(0);
+const [count, setCount] = atom(0);
 // reactive function
 reactive(() => {
   console.log(`count is: ${count()}`);
@@ -164,7 +164,7 @@ const list = component(items => {
   }
   return ul({}, items.length ? items.map(text => li({}, text)) : "No Items");
 });
-const [items, setItems] = reactive();
+const [items, setItems] = atom();
 wait(3000).then(() => setItems([1,2,3,4]));
 mount(list(items));
 ```
