@@ -9,10 +9,9 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "codehawk-cli": "^10.0.1",
     "unit-tester": "^1.0.3"
   },
   "dependencies": {
-    "atomi": "^0.0.3"
+    "atomi": "^0.1.2"
   }
 }
