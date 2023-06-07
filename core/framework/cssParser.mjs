@@ -1,45 +1,163 @@
 
-export const cssRegistery = {};
-
 function uid(seed) {
-  return seed.toString(36).substring(2);
+  return seed.toString(36).replace(".", "");
 }
 
-function capitalize(word) {
-  return word[0].toUpperCase() + word.slice(1);
+function hash(str) {
+  let hash = 0,
+    i, chr;
+  if (str.length === 0) return hash;
+  for (i = 0; i < str.length; i++) {
+    chr = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+}
+
+function splitFirst(str, tokens) {
+  for (let i = 0; i < str.length; i++) {
+    if (tokens.includes(str[i])) {
+      return [str.slice(0, i), str.slice(i)]
+    }
+  }
+  return [str]
+}
+
+class CSSRule {
+  constructor(selector, body) {
+    this.selector = selector;
+    this.body = body.split("\n").map(s => s.trim()).join(" ");
+  }
+
+  toString() {
+    return `${this.selector} { ${this.body} }`;
+  }
+}
+
+class AtRule {
+  static regular = ["@charset", "@import", "@namespace"]
+  static nestedSingular = ["@page", "@font-face", "@counter-style", "@property"]
+  static nestedPlural = ["@keyframes", "@font-feature-values"]
+  static nestedPluralProcessed = ["@media", "@supports", "@document", "@layer"]
+
+  constructor(rule, content) {
+    this.rule = rule;
+    this.content = content;
+  }
+
+  toString() {
+    return `${this.rule}${this.content ? `{${this.content}}`: ""}`;
+  }
+}
+
+class NestedAtRule extends AtRule {
+  toString() {
+    return `${this.rule}{\n\t${this.content.map(c => c.toString()).join("\n\t")}\n}`;
+  }
+}
+
+class CSSClassRegistery {
+  constructor(seed = Math.random()) {
+    this.map = new Map();
+    this.seed = seed;
+  }
+
+  hash(className) {
+    const hashed = this.map.get(className);
+    if (hashed) {
+      return hashed;
+    }
+
+    const newHash = uid(Math.abs(hash(className) * this.seed));
+    this.map.set(className, newHash);
+    return newHash;
+  }
+
+  parse(rawSelector) {
+    const selectors = rawSelector.split(",").map(s => s.trim());
+    return selectors.map(selector => {
+      if (selector.startsWith(".")) {
+        return selector.split(".").map(s => {
+          if (!s) {
+            return s;
+          }
+          const [klass, options = ""] = splitFirst(s, "#> [:~");
+          return `${klass}-${this.hash(klass.replace(".", ""))}${options}`;
+        }).join(".");
+      }
+      return selector;
+    }).join(", ");
+  }
+}
+
+function walk(array, iterator = () => array.length) {
+  let current = -1;
+  const accumulator = [];
+  while (current + 1 < array.length) {
+    accumulator.push(iterator(array[current += 1], () => array[current += 1]));
+  };
+  return accumulator;
+}
+
+function processesNestedAtRule(selector, next, processor) {
+  const content = [];
+  let innerSelector = next();
+  while(innerSelector) {
+    const block = next();
+    const parsedSelector = processor(innerSelector);
+    content.push(new CSSRule(parsedSelector, block));
+    innerSelector = next();
+  }
+  return new NestedAtRule(selector, content);
+}
+
+function processAtRule(selector, next, registery) {
+  const is = arr => arr.find((rule) => selector.startsWith(rule));
+  if (selector.endsWith(";") || is(AtRule.regular)) {
+    return new AtRule(selector);
+  }
+  if (is(AtRule.nestedSingular)) {
+    const content = next();
+    return new AtRule(selector, content);
+  }
+  if (is(AtRule.nestedPlural)) {
+    return processesNestedAtRule(selector, next, x => x);
+  }
+  if (is(AtRule.nestedPluralProcessed)) {
+    return processesNestedAtRule(selector, next, registery.parse.bind(registery));
+  }
+}
+
+function getCSSRuleParser(registery) {
+  return (selector, next) => {
+    if (selector.startsWith("@")) {
+      return processAtRule(selector, next, registery);
+    }
+    const block = next();
+    const parsed = registery.parse(selector);
+    return new CSSRule(parsed, block);
+  }
 }
 
 export function parse(css) {
   const parts = css.split("{");
-  const betterParts = parts.map(part => part.split("}").map(part => part.trim())).flat();
-  const registery = {};
-  const parsed = {}
-  for (let i = 0; i < betterParts.length -1; i += 2) {
-    // i === selector
-    const selector = betterParts[i];
-    const properties = betterParts[i + 1];
-    const parsedSelector = parseSelector(selector);
-    const uniqId = parsedSelector.concat(uid(Math.random())).join("-");
-    parsed[uniqId] = properties;
-    combine(registery, parsedSelector, uniqId);
+  let betterParts = parts.map(part => part.split("}").map(part => part.trim())).flat();
+  if (!betterParts.at(-1)) {
+    betterParts = betterParts.slice(0, -1);
   }
+  const registery = new CSSClassRegistery();
+  const cssRuleParser = getCSSRuleParser(registery);
+  const processedCss = walk(betterParts, cssRuleParser);
 
-  return { parsed, registery };
+  const classRegistery = Array.from(registery.map.entries(), ([className, hash]) => [parseSelector(className), `${className}-${hash}`])
+  .reduce((acc, [name, selector]) => Object.assign(acc, { [name]: selector }), {});
+
+  return { parsed: processedCss, registery: classRegistery };
 }
 
-function combine(acc, selector, uniqId) {
-  let current = acc;
-  let previous = {};
-  for (let part of selector) {
-    if (!current[part]) {
-      current[part] = {};
-    }
-    previous = current;
-    current = current[part];
-  }
-  const last = selector[selector.length - 1];
-  previous[last] = Object.assign(String(uniqId), previous[last]);
-  return acc;
+function capitalize(word) {
+  return word[0].toUpperCase() + word.slice(1);
 }
 
 function parseSelector(selector) {
@@ -51,17 +169,15 @@ function parseSelector(selector) {
   return parts;
 }
 
+export const cssRegistery = {};
+
 function getStyle(parsed) {
-  let css = "";
-  for (let [selector, properties] of Object.entries(parsed)) {
-    css += ` .${selector} { ${properties} }`;
-  }
   const style = document.createElement("style");
-  style.textContent = css;
+  style.textContent = parsed.map(css => css.toString()).join("\n");
   return style;
 }
 
-export function use(src) {
+export function importFromFile(src) {
   // NOTE: relyes on src being absolute
   if (!cssRegistery[src]) {
     return fetch(src)
@@ -74,4 +190,14 @@ export function use(src) {
     });
   }
   return Promise.resolve(cssRegistery[src]);
+}
+
+export function importCss(strs, ...args) {
+  const css = [];
+  for (let i = 0; i < strs.length; i++) {
+      css.push(strs[i], args[i]);
+  }
+  const { registery, parsed } = parse(css.join(""));
+  document.head.appendChild(getStyle(parsed));
+  return registery;
 }
