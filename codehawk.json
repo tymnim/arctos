@@ -1,4 +1,0 @@
-{
-    "skipDirectories": ["/node_modules", "coverage"],
-    "extensions": [".mjs"]
-}
