@@ -3,6 +3,7 @@ import { normalize, unwrap } from "./utils.mjs";
 import { isSSR } from "./renderer.mjs";
 
 const onRendered = Symbol("rendered");
+const onDestroyed = Symbol("destroyed");
 
 function flattenTree(node) {
   if (node.childNodes.length) {
@@ -12,10 +13,14 @@ function flattenTree(node) {
 }
 
 if (! isSSR) {
+  // TODO: think how to pass onRender and onDestroyed to the client side
   const observer = new MutationObserver(mutations => {
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach(node => {
         flattenTree(node).forEach(node => node[onRendered]?.());
+      });
+      mutation.removedNodes.forEach(node => {
+        flattenTree(node).forEach(node => node[onDestroyed]?.());
       });
     });
   });
@@ -46,7 +51,13 @@ function addRenderedHandler(self, nodes, contextData) {
       self._rendered(unwrap(nodes), contextData);
     }
   }
-  nodes.forEach(node => node[onRendered] = renderedCallback);
+  const destroyedCallback = () => {
+    self._destroyed(unwrap(nodes), contextData);
+  }
+  nodes.forEach(node => {
+    node[onRendered] = renderedCallback
+    node[onDestroyed] = destroyedCallback
+  });
 }
 
 export function component(func) {
@@ -70,11 +81,21 @@ export function component(func) {
   }
 
   self._renderedListeners = [];
+  self._destroyedListeners = [];
 
   self._rendered = async (instance, contextData) => {
     let listenerResult = [instance, contextData];
     // NOTE: chaining then statements based on returns of previous then statement
     for (let listener of self._renderedListeners) {
+      // NOTE: if listener returned no result we want to keep the previous one.
+      listenerResult = (await listener(...listenerResult)) ?? listenerResult;
+    }
+  };
+
+  self._destroyed = async (instance, contextData) => {
+    let listenerResult = [instance, contextData];
+    // NOTE: chaining finally statements based on returns of previous then statement
+    for (let listener of self._destroyedListeners) {
       // NOTE: if listener returned no result we want to keep the previous one.
       listenerResult = (await listener(...listenerResult)) ?? listenerResult;
     }
@@ -88,7 +109,7 @@ export function component(func) {
 
   self.finally = listener => {
     // is an event listener that is triggered when component is destroyed
-    // listener(self.currentData);
+    self._destroyedListeners.push(listener);
     return self;
   };
 
