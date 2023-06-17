@@ -1,6 +1,41 @@
-# alt-html
+# ARCTOS
 
-JavaScript framework to render some interactive html in the browser and on the server.
+A JavaScript framework to render some interactive html in the browser and on the server.
+
+# Motivation
+
+It is success when it fulfils the following criteria:
+
+- Functional looking code (as much as you can with JS)
+- Built in reactivity
+- All component code must fit into one file (no .html, .css, .js)
+- Components must work in isolation from each other
+
+# Spoilers
+
+```js
+import { mount, button, input, div, span, css, br } from "arctos"
+import { atom, inc } from "atomi"
+
+const style = css`
+  .counter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+`
+
+function app() {
+  const [counter,, setCounter] = atom(0)
+  return div({ class: style.counter }, [
+    span({}, () => `Counter is: ${counter()}`),
+    button({ on: { click() { setCounter(inc) } } }, "+")
+  ])
+}
+
+mount(app);
+
+```
 
 # Usage Notes
 
