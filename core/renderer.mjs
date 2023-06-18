@@ -1,5 +1,7 @@
 
 import { normalize } from "./utils.mjs";
+import { Node } from "./createElement.mjs";
+import { mountSSR, docRegistery } from "./static.mjs";
 
 export const render = Symbol("renderer");
 
@@ -13,9 +15,16 @@ async function renderer(...components) {
   }
 }
 // TODO: SSR option
-if (! isSSR) {
-  Object.defineProperty(Node.prototype, render, { get() { return renderer.bind(this) } });
+// if (! isSSR) {
+Object.defineProperty(Node.prototype, render, { get() { return renderer.bind(this) } });
+// }
+
+export function getDocument() {
+  if (isSSR) {
+    return docRegistery.current;
+  }
+  return document;
 }
 
 // TODO: body creating and parsing from html
-export const mount = !isSSR ? document.body[render] : undefined;
+export const mount = !isSSR ? document.body[render] : mountSSR(renderer);

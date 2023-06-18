@@ -58,6 +58,13 @@ export class Node {
     return this.#children;
   }
 
+  get innerText() {
+    return this.#children[0].toString();
+  }
+  set innerText(text) {
+    return this.#children = [new TextNode(text)];
+  }
+
   setParent(self) {
     if (this.#parentElement) {
       this.parentElement.removeChild(this);

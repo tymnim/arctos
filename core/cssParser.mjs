@@ -1,4 +1,7 @@
 
+import { style } from "./elements.mjs";
+import { getDocument } from "./renderer.mjs";
+
 function uid(seed) {
   return seed.toString(36).replace(".", "");
 }
@@ -172,9 +175,7 @@ function parseSelector(selector) {
 export const cssRegistery = {};
 
 function getStyle(parsed) {
-  const style = document.createElement("style");
-  style.textContent = parsed.map(css => css.toString()).join("\n");
-  return style;
+  return style({}, parsed.map(css => css.toString()).join("\n"));
 }
 
 export function importFromFile(src) {
@@ -184,7 +185,7 @@ export function importFromFile(src) {
     .then(res => res.text())
     .then(css => {
       const { parsed, registery } = parse(css);
-      document.head.appendChild(getStyle(parsed));
+      getDocument().head.appendChild(getStyle(parsed));
       cssRegistery[src] = registery;
       return registery;
     });
@@ -198,6 +199,6 @@ export function importCss(strs, ...args) {
       css.push(strs[i], args[i]);
   }
   const { registery, parsed } = parse(css.join(""));
-  document.head.appendChild(getStyle(parsed));
+  getDocument().head.appendChild(getStyle(parsed));
   return registery;
 }
