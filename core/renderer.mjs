@@ -1,7 +1,7 @@
 
 import { normalize } from "./utils.mjs";
 import { Node } from "./createElement.mjs";
-import { mountSSR, docRegistery } from "./static.mjs";
+import { mountSSR as ssr, docRegistery } from "./static.mjs";
 
 export const render = Symbol("renderer");
 
@@ -27,4 +27,5 @@ export function getDocument() {
 }
 
 // TODO: body creating and parsing from html
-export const mount = !isSSR ? document.body[render] : mountSSR(renderer);
+export const mount = !isSSR ? document.body[render] : undefined;
+export const mountSSR = ssr(renderer);
