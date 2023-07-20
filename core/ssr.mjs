@@ -1,5 +1,5 @@
 
-const upairedTags = ["br", "img", "input"];
+const upairedTags = ["br", "img", "input", "meta"];
 
 export class Node {
   constructor(tag) {

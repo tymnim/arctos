@@ -12,11 +12,16 @@ import { reactive } from "atomi";
 
 const PropertyNotAttributeList = ["checked"];
 
+export function reuse(node, attributes, ...children) {
+  return element("", [attributes, children], node);
+}
+
 export function element(tagName, [attributes = {}, children = []], existingNode) {
   const node = existingNode || createElement(tagName);
 
   applyEvents(node, attributes.on);
   applyAttributes(node, attributes);
+
   const { space } = reactive((scope) => {
     scope.space.content = replaceChildrenOf(node, normalize(children));
   });
