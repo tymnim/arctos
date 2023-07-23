@@ -46,6 +46,7 @@ function applyEvents(node, eventMap = {}) {
 }
 
 function applyAttribute(node, attr, value) {
+  // TODO: accept promises as attribute values
   const newValue = value instanceof Function ? value() : value;
   if (PropertyNotAttributeList.includes(attr)) {
     node[attr] = newValue;
@@ -72,7 +73,7 @@ function applyAttributes(node, {on, ...attributes}) {
   // NOTE: ignoring 'on' attribute since it's used not as an attrinute, but a way to provide event listeners;
   Object.entries(attributes)
   .reduce(parseAttribute, [])
-  .forEach(([attribute, values])  => bindAttribute(node, attribute, values));
+  .forEach(([attribute, values]) => bindAttribute(node, attribute, values));
 }
 
 function parseAttribute(attributes = [], [name, value]) {

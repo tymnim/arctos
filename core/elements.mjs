@@ -1,4 +1,3 @@
-
 import { element } from "./element.mjs";
 
 export function a(...args) {
@@ -325,3 +324,4 @@ export function video(...args) {
 export function wbr(...args) {
   return element("wbr", args);
 }
+
