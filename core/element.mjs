@@ -10,7 +10,7 @@ import { normalize } from "./utils.mjs";
 
 import { reactive } from "atomi";
 
-const PropertyNotAttributeList = ["checked"];
+const PropertyNotAttributeList = ["checked", "disabled"];
 
 export function reuse(node, attributes, ...children) {
   return element("", [attributes, children], node);
