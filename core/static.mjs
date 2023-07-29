@@ -2,26 +2,6 @@ import { body, head, html, meta, script, title } from "./elements.mjs";
 
 const DEFAULT_IMPORT_MAP = { "atomi": "/node_modules/atomi/index.mjs", "arctos": "/node_modules/arctos/index.mjs" };
 
-export class Stack {
-  #entities = []
-  constructor(current = []) {
-    this.#entities = current;
-  }
-
-  push(doc) {
-    this.#entities.push(doc);
-    return doc;
-  }
-
-  pop(doc) {
-    return this.#entities.pop();
-  }
-
-  get current() {
-    return this.#entities.at(-1);
-  }
-}
-
 export let document = null;
 
 export function defineDocument(path) {
@@ -101,7 +81,7 @@ export class _Document {
  * @return document
  **/
 export function Document(config) {
-  const expected = ["lang", "title", "importmap", "head", "body", "path"]
+  const expected = ["lang", "title", "importmap", "head", "body", "path"];
   Object.entries(config).forEach(([key, val]) => {
     // NOTE: nice to have in case of typo
     if (!expected.includes(key)) {
@@ -112,8 +92,6 @@ export function Document(config) {
   });
   return document;
 }
-
-export const docRegistery = new Stack();
 
 export function clientScript(urlOrFuncton) {
   if (urlOrFuncton instanceof Function) {
