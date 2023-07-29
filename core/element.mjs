@@ -10,13 +10,18 @@ import { normalize } from "./utils.mjs";
 
 import { reactive } from "atomi";
 
-const PropertyNotAttributeList = ["checked"];
+const PropertyNotAttributeList = ["checked", "disabled"];
+
+export function reuse(node, attributes, ...children) {
+  return element("", [attributes, children], node);
+}
 
 export function element(tagName, [attributes = {}, children = []], existingNode) {
   const node = existingNode || createElement(tagName);
 
   applyEvents(node, attributes.on);
   applyAttributes(node, attributes);
+
   const { space } = reactive((scope) => {
     scope.space.content = replaceChildrenOf(node, normalize(children));
   });
@@ -41,6 +46,7 @@ function applyEvents(node, eventMap = {}) {
 }
 
 function applyAttribute(node, attr, value) {
+  // TODO: accept promises as attribute values
   const newValue = value instanceof Function ? value() : value;
   if (PropertyNotAttributeList.includes(attr)) {
     node[attr] = newValue;
@@ -67,7 +73,7 @@ function applyAttributes(node, {on, ...attributes}) {
   // NOTE: ignoring 'on' attribute since it's used not as an attrinute, but a way to provide event listeners;
   Object.entries(attributes)
   .reduce(parseAttribute, [])
-  .forEach(([attribute, values])  => bindAttribute(node, attribute, values));
+  .forEach(([attribute, values]) => bindAttribute(node, attribute, values));
 }
 
 function parseAttribute(attributes = [], [name, value]) {

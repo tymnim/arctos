@@ -1,6 +1,6 @@
 {
-  "name": "alt-html",
-  "version": "0.1.2",
+  "name": "arctos",
+  "version": "0.0.1",
   "description": "",
   "main": "index.mjs",
   "scripts": {

@@ -1,5 +1,4 @@
-
-const upairedTags = ["br", "img", "input"];
+const upairedTags = ["br", "img", "input", "meta"];
 
 export class Node {
   constructor(tag) {
@@ -56,6 +55,13 @@ export class Node {
 
   get childNodes() {
     return this.#children;
+  }
+
+  get innerText() {
+    return this.#children[0].toString();
+  }
+  set innerText(text) {
+    return this.#children = [new TextNode(text)];
   }
 
   setParent(self) {
@@ -115,3 +121,4 @@ export class TextNode extends Node {
     return this.value;
   }
 }
+
