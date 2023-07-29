@@ -1,4 +1,3 @@
-
 import { style } from "./elements.mjs";
 import { getDocument } from "./renderer.mjs";
 
@@ -202,3 +201,4 @@ export function importCss(strs, ...args) {
   getDocument().head.appendChild(getStyle(parsed));
   return registery;
 }
+

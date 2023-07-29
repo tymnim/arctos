@@ -1,4 +1,3 @@
-
 import { normalize } from "./utils.mjs";
 import { Node } from "./createElement.mjs";
 import { getDocument as getDocumentSSR } from "./static.mjs";

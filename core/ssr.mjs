@@ -1,4 +1,3 @@
-
 const upairedTags = ["br", "img", "input", "meta"];
 
 export class Node {
@@ -122,3 +121,4 @@ export class TextNode extends Node {
     return this.value;
   }
 }
+
