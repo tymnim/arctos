@@ -1,16 +1,11 @@
-/**
- * TODO; write a good comment description
- * you may have:
- * 1. elements - api to create custom html elements
- * 2. components - a way to combine elements
-*/
-
 import { createElement, createTextNode, Node, Text } from "./createElement.mjs";
 import { normalize } from "./utils.mjs";
 
 import { reactive } from "atomi";
 
 const PropertyNotAttributeList = ["checked", "disabled"];
+
+const binder = Symbol("binder");
 
 export function reuse(node, attributes, ...children) {
   return element("", [attributes, children], node);
@@ -45,31 +40,67 @@ function applyEvents(node, eventMap = {}) {
   }
 }
 
-function applyAttribute(node, attr, value) {
-  // TODO: accept promises as attribute values
-  const newValue = value instanceof Function ? value() : value;
+/**
+ * @param {(string|function|Promise)} value
+ */
+function unwrapAttribute(value) {
+  if (value instanceof Function) {
+    return unwrapAttribute(value());
+  }
+  if (value instanceof Promise) {
+    return value.then(unwrapAttribute);
+  }
+  return value;
+}
+
+/**
+ * @param {node}    node
+ * @param {string}  attr
+ * @param {string}  value
+*/
+function applyUnwrapedAttribute(node, attr, value) {
   if (PropertyNotAttributeList.includes(attr)) {
-    node[attr] = newValue;
+    node[attr] = value;
   }
   else {
-    node.setAttribute(attr, newValue);
+    node.setAttribute(attr, value);
   }
   return node;
 }
 
+/**
+ * @param {node}              node
+ * @param {string}            attr
+ * @param {(string|function)} value
+*/
+function applyAttribute(node, attr, value) {
+  // TODO: accept promises as attribute values
+  // const newValue = value instanceof Function ? value() : value;
+  const newValue = unwrapAttribute(value);
+  if (newValue instanceof Promise) {
+    return newValue.then(unwraped => applyUnwrapedAttribute(node, attr, unwraped));
+  }
+  return applyUnwrapedAttribute(node, attr, newValue);
+}
+
+/**
+ * @param {Node}              node
+ * @param {string}            attr
+ * @param {(string|function)} value
+*/
 function bindAttribute(node, attr, value) {
-  reactive(scope => {
-    applyAttribute(node, attr, value)//.then(() => {;
+    reactive(async scope => {
+      await applyAttribute(node, attr, value);
+
       // NOTE: if after function execution scope did not register any dependencies,
       //       then there's none. We want just to forget about it.
       if (scope.deps.size === 0) {
         scope.die();
       }
-    //});
-  });
+    });
 }
 
-function applyAttributes(node, {on, ...attributes}) {
+function applyAttributes(node, { on, ...attributes }) {
   // NOTE: ignoring 'on' attribute since it's used not as an attrinute, but a way to provide event listeners;
   Object.entries(attributes)
   .reduce(parseAttribute, [])
