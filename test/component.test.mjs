@@ -3,8 +3,8 @@ import assert from "assert";
 import { Tests, Test } from "unit-tester";
 
 import { reactive, atom} from "atomi";
-import { div, span, input, ul, li } from "../core/framework/elements.mjs";
-import { component } from "../core/framework/component.mjs";
+import { div, span, input, ul, li } from "../index.mjs";
+import { component } from "../index.mjs";
 
 function wait(time = 0) { return new Promise(resolve => setTimeout(resolve, time))};
 
