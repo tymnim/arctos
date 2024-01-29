@@ -1,5 +1,4 @@
-
-import { div, span, input, ul, li, ol } from "../core/framework/elements.mjs";
+import { div, span, input, ul, li, ol } from "../index.mjs";
 import { atom } from "atomi";
 import assert from "assert";
 import { Tests, Test } from "unit-tester";
@@ -74,6 +73,35 @@ const inputTests = Tests("<input>",
   })
 );
 
+const attributeTests = Tests("Attribute Tests",
+  Test("string", async () => {
+    const element = div({ class: "container" });
+    assert.equal(element.toString(), `<div class="container"></div>`);
+  }),
+  Test("function -> string", async () => {
+    const element = div({ class: () => "container" });
+    assert.equal(element.toString(), `<div class="container"></div>`);
+  }),
+  Test("atom", async () => {
+    const [className, setClassName] = atom("container");
+    const element = div({ class: className });
+    assert.equal(element.toString(), `<div class="container"></div>`);
+    await setClassName("container-1");
+    assert.equal(element.toString(), `<div class="container-1"></div>`);
+  }),
+  Test("Promise", async () => {
+    const element = await div({ class: wait(100).then(() => "container") });
+    await wait(200);
+    assert.equal(element.toString(), `<div class="container"></div>`);
+  }),
+  Test("function -> Promise", async () => {
+    const element = await div({ class: () => wait(100).then(() => "container") });
+    await wait(200);
+    assert.equal(element.toString(), `<div class="container"></div>`);
+  }),
+  Test("bind", async () => {})
+);
+
 export default [
   divTests,
   spanTests,
@@ -108,5 +136,6 @@ export default [
       await wait(100);
       assert.equal(list.toString(), "<ol><li>1</li><li>2</li></ol>");
     })
-  )
+  ),
+  attributeTests
 ];

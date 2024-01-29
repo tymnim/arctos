@@ -1,14 +1,8 @@
-/**
- * TODO; write a good comment description
- * you may have:
- * 1. elements - api to create custom html elements
- * 2. components - a way to combine elements
-*/
+import { reactive, ReactiveVar } from "atomi";
 
 import { createElement, createTextNode, Node, Text } from "./createElement.mjs";
 import { normalize } from "./utils.mjs";
-
-import { reactive } from "atomi";
+import { Binder } from "./binder.mjs";
 
 const PropertyNotAttributeList = ["checked", "disabled"];
 
@@ -45,31 +39,73 @@ function applyEvents(node, eventMap = {}) {
   }
 }
 
-function applyAttribute(node, attr, value) {
-  // TODO: accept promises as attribute values
-  const newValue = value instanceof Function ? value() : value;
+/**
+ * @param {(string|function|Promise)} value
+ */
+function unwrapAttribute(value) {
+  if (value instanceof Function) {
+    return unwrapAttribute(value());
+  }
+  if (value instanceof Promise) {
+    return value.then(unwrapAttribute);
+  }
+  if (value instanceof Binder) {
+    return value.atom.get();
+  }
+  return value;
+}
+
+/**
+ * @param {node}    node
+ * @param {string}  attr
+ * @param {string}  value
+*/
+function applyUnwrapedAttribute(node, attr, value) {
   if (PropertyNotAttributeList.includes(attr)) {
-    node[attr] = newValue;
+    node[attr] = value;
   }
   else {
-    node.setAttribute(attr, newValue);
+    node.setAttribute(attr, value);
   }
   return node;
 }
 
-function bindAttribute(node, attr, value) {
-  reactive(scope => {
-    applyAttribute(node, attr, value)//.then(() => {;
-      // NOTE: if after function execution scope did not register any dependencies,
-      //       then there's none. We want just to forget about it.
-      if (scope.deps.size === 0) {
-        scope.die();
-      }
-    //});
-  });
+/**
+ * @param {node}              node
+ * @param {string}            attr
+ * @param {(string|function)} value
+*/
+function applyAttribute(node, attr, value) {
+  // TODO: accept promises as attribute values
+  // const newValue = value instanceof Function ? value() : value;
+  const newValue = unwrapAttribute(value);
+  if (newValue instanceof Promise) {
+    return newValue.then(unwraped => applyUnwrapedAttribute(node, attr, unwraped));
+  }
+  return applyUnwrapedAttribute(node, attr, newValue);
 }
 
-function applyAttributes(node, {on, ...attributes}) {
+/**
+ * @param {Node}              node
+ * @param {string}            attr
+ * @param {(string|function|ReactiveVar)} value
+ */
+function bindAttribute(node, attr, value) {
+  reactive(async scope => {
+    await applyAttribute(node, attr, value);
+
+    // NOTE: if after function execution scope did not register any dependencies,
+    //       then there's none. We want just to forget about it.
+    if (scope.deps.size === 0) {
+      scope.die();
+    }
+  });
+  if (value instanceof Binder) {
+    value.bind(attr, node);
+  }
+}
+
+function applyAttributes(node, { on, ...attributes }) {
   // NOTE: ignoring 'on' attribute since it's used not as an attrinute, but a way to provide event listeners;
   Object.entries(attributes)
   .reduce(parseAttribute, [])

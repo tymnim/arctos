@@ -25,6 +25,7 @@ Table of contents
         * [Data attributes](#data-attributes)
         * [Nested Elements](#nested-elements)
         * [Async Elements](#async-elements)
+        * [Attribute Binding](#attribute-binding)
     * [Render/Mount](#rendermount)
     * [Custom Elements](#custom-elements)
     * [Reactivity](#built-in-reactivity)
@@ -288,6 +289,26 @@ function passwordField(rulesToSatisfy = 3) {
 }
 
 mount(passwordField(3))
+```
+
+### Attribute Binding
+
+Attribute binding can be used on:
+
+- `input({ value: bind(atom) })`
+- `select({ value: bind(atom) }, [...])`
+- `input({ type: "checkbox|radio", checked: bind(atom) })`
+
+```js
+import { atom } from "atomi"
+import { input, bind } from "arctos"
+
+const [name] = atom("")
+reactive(() => {
+    console.log(name())
+})
+
+input({ type: "text", value: bind(name) }) // console.log name when input's value changes
 ```
 
 ### Components
