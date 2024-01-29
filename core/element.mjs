@@ -1,11 +1,10 @@
+import { reactive, ReactiveVar } from "atomi";
+
 import { createElement, createTextNode, Node, Text } from "./createElement.mjs";
 import { normalize } from "./utils.mjs";
-
-import { reactive } from "atomi";
+import { Binder } from "./binder.mjs";
 
 const PropertyNotAttributeList = ["checked", "disabled"];
-
-const binder = Symbol("binder");
 
 export function reuse(node, attributes, ...children) {
   return element("", [attributes, children], node);
@@ -50,6 +49,9 @@ function unwrapAttribute(value) {
   if (value instanceof Promise) {
     return value.then(unwrapAttribute);
   }
+  if (value instanceof Binder) {
+    return value.atom.get();
+  }
   return value;
 }
 
@@ -86,18 +88,21 @@ function applyAttribute(node, attr, value) {
 /**
  * @param {Node}              node
  * @param {string}            attr
- * @param {(string|function)} value
-*/
+ * @param {(string|function|ReactiveVar)} value
+ */
 function bindAttribute(node, attr, value) {
-    reactive(async scope => {
-      await applyAttribute(node, attr, value);
+  reactive(async scope => {
+    await applyAttribute(node, attr, value);
 
-      // NOTE: if after function execution scope did not register any dependencies,
-      //       then there's none. We want just to forget about it.
-      if (scope.deps.size === 0) {
-        scope.die();
-      }
-    });
+    // NOTE: if after function execution scope did not register any dependencies,
+    //       then there's none. We want just to forget about it.
+    if (scope.deps.size === 0) {
+      scope.die();
+    }
+  });
+  if (value instanceof Binder) {
+    value.bind(attr, node);
+  }
 }
 
 function applyAttributes(node, { on, ...attributes }) {
