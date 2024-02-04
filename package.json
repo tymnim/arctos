@@ -9,7 +9,7 @@
   "author": "Tim Nimest <tymnim@gmail.com> (https://tim.nimets.dev)",
   "license": "MIT",
   "devDependencies": {
-    "unit-tester": "^1.0.3"
+    "unit-tester": "1.0.5"
   },
   "dependencies": {
     "atomi": "0.1.3"
