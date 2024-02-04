@@ -335,7 +335,20 @@ import { div, once } from "arctos"
 import { atom } from "atomi"
 
 const [ready, setReady] = atom(flase)
-div({}, once(ready, () => "It's just a string but can be a complex element to render"))
+const container = div({}, once(ready, () => "It's just a string but can be a complex element to render"))
+
+// <div><div>
+console.log(container)
+await setReady(true)
+
+// <div>It's just a string but can be a complex element to render</div>
+console.log(container)
+
+await setReady(false)
+
+// NOTE: div would still have content because of once
+// <div>It's just a string but can be a complex element to render</div>
+console.log(container)
 ```
 
 ### Components

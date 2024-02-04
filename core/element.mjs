@@ -10,7 +10,7 @@ const specialAttributes = {
     if (classes.constructor === Object) {
       // NOTE: detected a class map;
       return Object.entries(classes)
-     .filter(([classname, condition]) => {
+      .filter(([classname, condition]) => {
         if (condition instanceof Function) {
           return condition();
         }
