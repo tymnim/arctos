@@ -6,10 +6,10 @@ import { Binder } from "./binder.mjs";
 
 const PropertyNotAttributeList = ["checked", "disabled"];
 const specialAttributes = {
-  class: (classNamesOrClassMap, node) => {
-    if (classNamesOrClassMap instanceof Object) {
+  class: (classes, node) => {
+    if (classes.constructor === Object) {
       // NOTE: detected a class map;
-      return Object.entries(classNamesOrClassMap)
+      return Object.entries(classes)
      .filter(([classname, condition]) => {
         if (condition instanceof Function) {
           return condition();
@@ -18,7 +18,7 @@ const specialAttributes = {
       }).map((entry) => entry[0])
       .join(" ");
     }
-    return classNamesOrClassMap;
+    return classes;
   }
 }
 
