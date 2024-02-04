@@ -1,4 +1,22 @@
 import { element } from "./element.mjs";
+import { atom, reactive } from "atomi";
+
+/**
+ * @param {fn => boolean} condition
+ * @param {Any}           context
+ *
+ * Inteded use is to render lazy render content once the condition is fulfilled;
+ */
+export function once(condition, content) {
+  const [result, setResult] = atom();
+  reactive(scope => {
+    if (condition()) {
+      scope.stop();
+      setResult(content());
+    }
+  })
+  return result;
+}
 
 export function a(...args) {
   return element("a", args);

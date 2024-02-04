@@ -5,6 +5,22 @@ import { normalize } from "./utils.mjs";
 import { Binder } from "./binder.mjs";
 
 const PropertyNotAttributeList = ["checked", "disabled"];
+const specialAttributes = {
+  class: (classes, node) => {
+    if (classes.constructor === Object) {
+      // NOTE: detected a class map;
+      return Object.entries(classes)
+      .filter(([classname, condition]) => {
+        if (condition instanceof Function) {
+          return condition();
+        }
+        return condition;
+      }).map((entry) => entry[0])
+      .join(" ");
+    }
+    return classes;
+  }
+}
 
 export function reuse(node, attributes, ...children) {
   return element("", [attributes, children], node);
@@ -17,7 +33,7 @@ export function element(tagName, [attributes = {}, children = []], existingNode)
   applyAttributes(node, attributes);
 
   const { space } = reactive((scope) => {
-    scope.space.content = replaceChildrenOf(node, normalize(children));
+    scope.space.content = replaceChildrenOf(node, normalize(children).filter(child => child !== undefined));
   });
 
   if (space.content instanceof Promise) {
@@ -79,6 +95,8 @@ function applyAttribute(node, attr, value) {
   // TODO: accept promises as attribute values
   // const newValue = value instanceof Function ? value() : value;
   const newValue = unwrapAttribute(value);
+  // NOTE: async atrribnutes cannot be reactive. If you refer to any atoms incide,
+  //       they would not bind and your attribute would execute exactly once
   if (newValue instanceof Promise) {
     return newValue.then(unwraped => applyUnwrapedAttribute(node, attr, unwraped));
   }
@@ -92,8 +110,14 @@ function applyAttribute(node, attr, value) {
  */
 function bindAttribute(node, attr, value) {
   reactive(async scope => {
-    await applyAttribute(node, attr, value);
-
+    const attrParser = specialAttributes[attr];
+    if (attrParser) {
+      const parsedValue = attrParser(value);
+      await applyAttribute(node, attr, parsedValue);
+    }
+    else {
+      await applyAttribute(node, attr, value);
+    }
     // NOTE: if after function execution scope did not register any dependencies,
     //       then there's none. We want just to forget about it.
     if (scope.deps.size === 0) {
@@ -131,14 +155,14 @@ function replaceChildrenOf(node, children) {
     return new Promise(resolve => {
       Promise.all(allKids).then(kids => {
         while (node.firstChild) { node.removeChild(node.lastChild) }
-        node.append(...kids)
+        node.append(...kids.filter(child => child !== undefined));
         resolve(node);
       });
     });
   }
 
   while (node.firstChild) { node.removeChild(node.lastChild) }
-  node.append(...allKids);
+  node.append(...allKids.filter(child => child !== undefined));
   return node;
 }
 
@@ -168,5 +192,8 @@ function renderChild(child) {
   if (child instanceof Array) {
     return child.map(kid => renderChild(kid))
   }
-  return createTextNode(child)
+  if (child !== undefined) {
+    return createTextNode(child);
+  }
+  return child;
 }

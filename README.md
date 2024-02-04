@@ -12,8 +12,7 @@ It is a success when it fulfils the following criteria:
 - Components must work in isolation from each other
 - Bonus points for SSR and static site compilation
 
-Table of contents
-=================
+# Table of contents
 
 <!--ts-->
   * [Spoilers](#spoilers)
@@ -22,13 +21,15 @@ Table of contents
     * [Elements](#elements)
         * [Basic Elements](#basic-elements)
         * [Event Listeners](#event-listeners)
-        * [Data attributes](#data-attributes)
+        * [Data Attributes](#data-attributes)
         * [Nested Elements](#nested-elements)
         * [Async Elements](#async-elements)
-        * [Attribute Binding](#attribute-binding)
+        * [Class Map](#class-map)
     * [Render/Mount](#rendermount)
     * [Custom Elements](#custom-elements)
     * [Reactivity](#built-in-reactivity)
+    * [Attribute Binding](#attribute-binding)
+    * [`once` element](#once-element)
     * [Components](#components)
     * [Styling](#styling)
     * [Static Compilation](#static-compilation)
@@ -120,6 +121,20 @@ div({ class: "container" }, span({}, "Hello World"))
 ```js
 // <span>Hello World</span>
 await span({}, new Promise(resolve => setTimeout(() => resolve("Hello World"), 1000)))
+```
+
+###### Class Map:
+```js
+const [isVisible, setVisible] = atom(false);
+const container = div({ class: { container: true, visible: isVisible } })
+
+// <div class="container"></div>
+console.log(container);
+
+await setVisible(true);
+
+// <div class="container visible"></div>
+console.log(container)
 ```
 
 All element functions are "optionally async". This means that they normally will resolve into an element immidiately unless a promise is encountered among the children.
@@ -309,6 +324,31 @@ reactive(() => {
 })
 
 input({ type: "text", value: bind(name) }) // console.log name when input's value changes
+```
+
+### `once` Element
+
+`once` can be used to lazy-render elements on the page
+
+```js
+import { div, once } from "arctos"
+import { atom } from "atomi"
+
+const [ready, setReady] = atom(flase)
+const container = div({}, once(ready, () => "It's just a string but can be a complex element to render"))
+
+// <div><div>
+console.log(container)
+await setReady(true)
+
+// <div>It's just a string but can be a complex element to render</div>
+console.log(container)
+
+await setReady(false)
+
+// NOTE: div would still have content because of once
+// <div>It's just a string but can be a complex element to render</div>
+console.log(container)
 ```
 
 ### Components

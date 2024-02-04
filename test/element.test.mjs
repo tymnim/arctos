@@ -47,8 +47,7 @@ const spanTests = Tests("<span>",
     const [spanClass, setSpanClass] = atom("there-span");
     const sp = span({ class: spanClass });
     assert.equal(`<span class="there-span"></span>`, sp.toString());
-    setSpanClass("their-span");
-    await wait(100);
+    await setSpanClass("their-span");
     assert.equal(`<span class="their-span"></span>`, sp.toString());
   }),
 );
@@ -99,7 +98,16 @@ const attributeTests = Tests("Attribute Tests",
     await wait(200);
     assert.equal(element.toString(), `<div class="container"></div>`);
   }),
-  Test("bind", async () => {})
+  Test("bind", async () => {}),
+  Test("Class map", async () => {
+    const [visible, setVisible] = atom(false);
+    const container = div({ class: { container: true, visible } });
+    assert.equal(container.toString(), `<div class="container"></div>`);
+    await setVisible(true);
+    assert.equal(container.toString(), `<div class="container visible"></div>`);
+    await setVisible(false);
+    assert.equal(container.toString(), `<div class="container"></div>`);
+  }),
 );
 
 export default [
