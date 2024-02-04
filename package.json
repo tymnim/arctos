@@ -1,13 +1,13 @@
 {
   "name": "arctos",
-  "version": "0.0.2",
-  "description": "",
+  "version": "0.0.3",
+  "description": "a javascript framework",
   "main": "index.mjs",
   "scripts": {
     "test": "node_modules/unit-tester/test.mjs test"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Tim Nimest <tymnim@gmail.com> (https://tim.nimets.dev)",
+  "license": "MIT",
   "devDependencies": {
     "unit-tester": "^1.0.3"
   },
