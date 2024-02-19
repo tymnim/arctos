@@ -1,15 +1,17 @@
 import { ReactiveVar } from "atomi";
 
-
 const bindmap = {
   INPUT: {
     checked: [
-      { types: ["checkbox", "radio"], event: "change" },
+      { types: ["checkbox", "radio"], event: "change" }
     ],
     value: [
-      // NOTE: completely ignored: type: ["submit", "image", "button", "hidden"], since not sure what to do with them
-      { types: ["text", "number", "password", "email", "range", "search", "tel", "url"], event: "input" },
-      { types: ["date", "color", "datetime-local", "file", "month", "time", "week"], event: "checked" },
+      // NOTE: completely ignored:
+      //       type: ["submit", "image", "button", "hidden"], since not sure what to do with them
+      { types: ["text", "number", "password", "email", "range", "search", "tel", "url"],
+        event: "input" },
+      { types: ["date", "color", "datetime-local", "file", "month", "time", "week"],
+        event: "checked" }
     ]
   },
   SELECT: {
@@ -20,6 +22,9 @@ const bindmap = {
 };
 
 export class Binder {
+  /**
+   * @param {ReactiveVar} reactiveVar
+   */
   constructor(reactiveVar) {
     this.atom = reactiveVar;
   }
@@ -28,6 +33,10 @@ export class Binder {
     return this.atom.get();
   }
 
+  /**
+   * @param {string} attribute
+   * @param {Node}   node
+   */
   bind(attribute, node) {
     const binders = bindmap[node.nodeName]?.[attribute];
     if (!binders) {
@@ -42,24 +51,29 @@ export class Binder {
       return binder;
     });
     if (!binder) {
-      throw new Error(`Cannot find a suitable binder for "${attribute}" on ${node.nodeName.toLowerCase()}`);
+      throw new Error(`Cannot find a suitable binder for "${attribute}"`
+        + `on ${node.nodeName.toLowerCase()}`);
     }
 
-    node.addEventListener(binder.event, (e) => {
-      const newValue = e.currentTarget[attribute];
+    node.addEventListener(binder.event, e => {
+      const newValue = e?.currentTarget?.[attribute];
       this.atom.set(newValue);
     });
   }
 }
 
 /**
+ * @typedef {Function & {reactiveVar: ReactiveVar}} AtomicGetter
+ *
+ * @prop {ReactiveVar} reactiveVar
+ *
  * Indicates that attribute can be bound to an atom.
- * @param {function} atomicGetter
+ * @param {AtomicGetter|ReactiveVar} atomicGetter
  */
-export function bind(atomOrGetter) {
-  if (atomOrGetter instanceof ReactiveVar) {
-    return new Binder(atomic);
+export function bind(atomicGetter) {
+  if (atomicGetter instanceof ReactiveVar) {
+    return new Binder(atomicGetter);
   }
-  return new Binder(atomOrGetter.reactiveVar);
+  return new Binder(atomicGetter.reactiveVar);
 }
 
