@@ -26,7 +26,7 @@ module.exports = {
     "sourceType": "module"
   },
   "rules": {
-    "@stylistic/indent": ["error", 2],
+    "@stylistic/indent": ["error", 2, { "MemberExpression": "off" }],
     "@stylistic/arrow-spacing": "error",
     "@stylistic/eol-last": ["error", "always"],
     "@stylistic/arrow-parens": ["error", "as-needed"],

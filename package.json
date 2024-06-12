@@ -7,7 +7,7 @@
   "scripts": {
     "test": "node_modules/unit-tester/test.mjs test",
     "eslint": "node_modules/eslint/bin/eslint.js **/*.mjs",
-    "types": "node_modules/typescript/bin/tsc --allowJs -d --emitDeclarationOnly --lib es2023,dom --target es6 index.mjs --outDir types"
+    "types": "node_modules/typescript/bin/tsc --allowJs -d --emitDeclarationOnly --lib es2023,dom --target es6 index.mjs --outDir types --moduleResolution nodenext --module nodenext"
   },
   "author": "Tim Nimest <tymnim@gmail.com> (https://tim.nimets.dev)",
   "license": "MIT",

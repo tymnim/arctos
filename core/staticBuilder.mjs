@@ -3,16 +3,17 @@ import { join, dirname } from "node:path";
 import { readdir, mkdir, writeFile, readFile } from "node:fs/promises";
 
 /**
- * @param inputFolder[]
- * @param workdir
- * @return fileList[] - filenames prefixed with respective input folder
+ * @param {string[]} inputPaths
+ * @param {string} workdir
+ * @param {RegExp} match
+ * @return {Promise<string[]>} - filenames prefixed with respective input folder
  **/
 async function inputFiles(inputPaths, workdir, match) {
   const folders = inputPaths.map(async dir => {
     const files = await readdir(join(workdir, dir));
     return files
-    .filter(file => match.test(file))
-    .map(file => join(dir, file))
+      .filter(file => match.test(file))
+      .map(file => join(dir, file));
   });
   return (await Promise.all(folders)).flat();
 }
@@ -38,12 +39,18 @@ export class StaticBuilder {
     this.match = new RegExp(match);
   }
 
+  /**
+   * @param {string} message
+   */
   log(message) {
     if (this.logging) {
       console.log(message);
     }
   }
 
+  /**
+   * Compiles files, into html output
+   */
   async build() {
     const paths = inputFiles(this.inputPaths, this.workdir, this.match);
     for (let path of await paths) {
@@ -56,9 +63,12 @@ export class StaticBuilder {
     }
   }
 
+  /**
+   * Out puts compiled html files into the folder
+   */
   async output() {
     const outputDir = await mkdir(this.outputPath, { recursive: true });
-    for (let [path, document] of documentRegistery.entries()) {
+    for (let [_path, document] of documentRegistery.entries()) {
       const name = document.path.replace(".mjs", ".html");
       this.log(`✏️ Saving ${document.path}`);
       const fullPath = join(this.outputPath, name);
@@ -68,4 +78,3 @@ export class StaticBuilder {
     }
   }
 }
-

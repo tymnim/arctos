@@ -7,5 +7,5 @@ export { store, useStore } from "./core/stores.mjs";
 export { importCss as css, importFromFile as importCssFrom, parse, cssRegistery} from "./core/cssParser.mjs";
 export { focus } from "./core/utils.mjs";
 export { clientScript, defineDocument, _Document, Document } from "./core/static.mjs";
-export { bind, Binder } from "./core/binder.mjs";
+export { bind } from "./core/binder.mjs";
 

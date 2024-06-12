@@ -5,21 +5,29 @@ export class Node {
     this.#tag = tag;
   }
 
-  #tag = ""
-  #children = []
-  #attributes = {}
+  #tag = "";
 
-  #parentElement = null
+  #children = [];
+
+  #attributes = {};
+
+  #parentElement = null;
 
   toString() {
     const { data = {}, area = {}, ...attributes } = this.#attributes;
-    // NOTE: overriding attributes with properties. Eg if checked prop is conflicted with checked attr, we want to use prop
-    Object.assign(attributes, Object.getOwnPropertyNames(this).reduce((acc, prop) => { acc[prop] = this[prop]; return acc; }, {}));
+    // NOTE: overriding attributes with properties.
+    //       Eg if 'checked' prop is conflicted with checked attr, we want to use prop
+    Object.assign(
+      attributes,
+      Object.getOwnPropertyNames(this)
+      .reduce((acc, prop) => Object.assign(acc, { [prop]: this[prop] }))
+    );
     const apply = (attrs, prefix) => Object.entries(attrs)
       .map(([name, value]) => `${prefix ? prefix + "_" : ""}${name}="${value}"`)
       .join(" ");
 
-    const trimmedAttributes = `${apply(attributes)} ${apply(data, "data")} ${apply(area, "area")}`.trim();
+    const trimmedAttributes = `${apply(attributes)} ${apply(data, "data")} ${apply(area, "area")}`
+    .trim();
 
     if (upairedTags.includes(this.#tag)) {
       return `<${this.#tag}${trimmedAttributes ? ` ${trimmedAttributes}` : ""}>`;
@@ -60,8 +68,9 @@ export class Node {
   get innerText() {
     return this.#children[0].toString();
   }
+
   set innerText(text) {
-    return this.#children = [new TextNode(text)];
+    this.#children = [new TextNode(text)];
   }
 
   setParent(self) {

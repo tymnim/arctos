@@ -1,3 +1,4 @@
+// @ts-check
 import { reactive } from "atomi";
 import { normalize, unwrap } from "./utils.mjs";
 import { isSSR } from "./renderer.mjs";
@@ -7,15 +8,15 @@ const onDestroyed = Symbol("destroyed");
 
 function flattenTree(node) {
   if (node.childNodes.length) {
-    return [node, ...Array.from(node.childNodes).map(flattenTree)].flat()
+    return [node, ...Array.from(node.childNodes).map(flattenTree)].flat();
   }
   return [node];
 }
 
-if (! isSSR) {
+if (!isSSR) {
   // TODO: think how to pass onRender and onDestroyed to the client side
   const observer = new MutationObserver(mutations => {
-    mutations.forEach((mutation) => {
+    mutations.forEach(mutation => {
       mutation.addedNodes.forEach(node => {
         flattenTree(node).forEach(node => node[onRendered]?.());
       });
@@ -50,13 +51,13 @@ function addRenderedHandler(self, nodes, contextData) {
     if (!rendered) {
       self._rendered(unwrap(nodes), contextData);
     }
-  }
+  };
   const destroyedCallback = () => {
     self._destroyed(unwrap(nodes), contextData);
-  }
+  };
   nodes.forEach(node => {
-    node[onRendered] = renderedCallback
-    node[onDestroyed] = destroyedCallback
+    node[onRendered] = renderedCallback;
+    node[onDestroyed] = destroyedCallback;
   });
 }
 
@@ -67,9 +68,7 @@ export function component(func) {
         const nodes = await Promise.all(normalize(func(...contextData)));
         if (!scope.space.nodes) {
           scope.space.nodes = nodes;
-          // TODO: rendered actually should be called not when component is done creating,
-          //       but when it is done appending into its parent
-          await addRenderedHandler(self, nodes, contextData);
+          addRenderedHandler(self, nodes, contextData);
 
           resolve(unwrap(nodes));
         }
@@ -78,7 +77,7 @@ export function component(func) {
         }
       });
     });
-  }
+  };
 
   self._renderedListeners = [];
   self._destroyedListeners = [];

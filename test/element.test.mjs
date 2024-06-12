@@ -2,7 +2,10 @@ import { div, span, input, ul, li, ol } from "../index.mjs";
 import { atom } from "atomi";
 import assert from "assert";
 
-function wait(time) { return new Promise(resolve => setTimeout(resolve, time)) }
+function wait(time) {
+  return new Promise(resolve => setTimeout(resolve, time));
+}
+
 /**
  * @template {any} T
  * @param {T}       data
@@ -90,7 +93,7 @@ const elementTests = {
       assert.equal(list.toString(), "<ul></ul>");
     },
     "list with children": () => {
-      const list = ul({}, [1,2,3].map(number => li({}, number)));
+      const list = ul({}, [1, 2, 3].map(number => li({}, number)));
       assert.equal(list.toString(), "<ul><li>1</li><li>2</li><li>3</li></ul>");
     }
   },
@@ -100,7 +103,7 @@ const elementTests = {
       assert.equal(list.toString(), "<ol></ol>");
     },
     "list with async children": async () => {
-      const list = await ol({}, [1,2,3].map(number => li({}, resolveIn(number.toString(), 200))));
+      const list = await ol({}, [1, 2, 3].map(number => li({}, resolveIn(number.toString(), 200))));
       assert.equal(list.toString(), "<ol><li>1</li><li>2</li><li>3</li></ol>");
     },
     "list with reactive children (append, remove children)": async () => {

@@ -20,10 +20,10 @@ function hash(str) {
 function splitFirst(str, tokens) {
   for (let i = 0; i < str.length; i++) {
     if (tokens.includes(str[i])) {
-      return [str.slice(0, i), str.slice(i)]
+      return [str.slice(0, i), str.slice(i)];
     }
   }
-  return [str]
+  return [str];
 }
 
 class CSSRule {
@@ -38,10 +38,13 @@ class CSSRule {
 }
 
 class AtRule {
-  static regular = ["@charset", "@import", "@namespace"]
-  static nestedSingular = ["@page", "@font-face", "@counter-style", "@property"]
-  static nestedPlural = ["@keyframes", "@font-feature-values"]
-  static nestedPluralProcessed = ["@media", "@supports", "@document", "@layer"]
+  static regular = ["@charset", "@import", "@namespace"];
+
+  static nestedSingular = ["@page", "@font-face", "@counter-style", "@property"];
+
+  static nestedPlural = ["@keyframes", "@font-feature-values"];
+
+  static nestedPluralProcessed = ["@media", "@supports", "@document", "@layer"];
 
   constructor(rule, content) {
     this.rule = rule;
@@ -49,7 +52,7 @@ class AtRule {
   }
 
   toString() {
-    return `${this.rule}${this.content ? `{${this.content}}`: ""}`;
+    return `${this.rule}${this.content ? `{${this.content}}` : ""}`;
   }
 }
 
@@ -93,19 +96,19 @@ class CSSClassRegistery {
   }
 }
 
-function walk(array, iterator = () => array.length) {
+function walk(array, iterator) {
   let current = -1;
   const accumulator = [];
   while (current + 1 < array.length) {
     accumulator.push(iterator(array[current += 1], () => array[current += 1]));
-  };
+  }
   return accumulator;
 }
 
 function processesNestedAtRule(selector, next, processor) {
   const content = [];
   let innerSelector = next();
-  while(innerSelector) {
+  while (innerSelector) {
     const block = next();
     const parsedSelector = processor(innerSelector);
     content.push(new CSSRule(parsedSelector, block));
@@ -115,7 +118,7 @@ function processesNestedAtRule(selector, next, processor) {
 }
 
 function processAtRule(selector, next, registery) {
-  const is = arr => arr.find((rule) => selector.startsWith(rule));
+  const is = arr => arr.find(rule => selector.startsWith(rule));
   if (selector.endsWith(";") || is(AtRule.regular)) {
     return new AtRule(selector);
   }
@@ -139,9 +142,12 @@ function getCSSRuleParser(registery) {
     const block = next();
     const parsed = registery.parse(selector);
     return new CSSRule(parsed, block);
-  }
+  };
 }
 
+/**
+ * @param {string} css
+ */
 export function parse(css) {
   const parts = css.split("{");
   let betterParts = parts.map(part => part.split("}").map(part => part.trim())).flat();
@@ -152,7 +158,10 @@ export function parse(css) {
   const cssRuleParser = getCSSRuleParser(registery);
   const processedCss = walk(betterParts, cssRuleParser);
 
-  const classRegistery = Array.from(registery.map.entries(), ([className, hash]) => [parseSelector(className), `${className}-${hash}`])
+  const classRegistery = Array.from(
+    registery.map.entries(),
+    ([className, hash]) => [parseSelector(className), `${className}-${hash}`]
+  )
   .reduce((acc, [name, selector]) => Object.assign(acc, { [name]: selector }), {});
 
   return { parsed: processedCss, registery: classRegistery };
@@ -163,7 +172,7 @@ function capitalize(word) {
 }
 
 function parseSelector(selector) {
-  const identity = x => x
+  const identity = x => x;
   const parts = selector.split(/[>\s]/g).filter(identity).map(part => {
     const innerParts = part.split(/[-.]/).filter(identity);
     return innerParts[0] + innerParts.slice(1).map(capitalize).join("");
@@ -177,6 +186,9 @@ function getStyle(parsed) {
   return style({}, parsed.map(css => css.toString()).join("\n"));
 }
 
+/**
+ * @param {string} src - url to the file containing css
+ */
 export function importFromFile(src) {
   // NOTE: relyes on src being absolute
   if (!cssRegistery[src]) {
@@ -192,10 +204,14 @@ export function importFromFile(src) {
   return Promise.resolve(cssRegistery[src]);
 }
 
+/**
+ * @param {string[]} strs
+ * @param {...string[]} args
+ */
 export function importCss(strs, ...args) {
   const css = [];
   for (let i = 0; i < strs.length; i++) {
-      css.push(strs[i], args[i]);
+    css.push(strs[i], args[i]);
   }
   const { registery, parsed } = parse(css.join(""));
   getDocument().head.appendChild(getStyle(parsed));

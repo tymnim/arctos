@@ -1,6 +1,8 @@
 import { body, head, html, meta, script, title } from "./elements.mjs";
 
-const DEFAULT_IMPORT_MAP = { "atomi": "/node_modules/atomi/index.mjs", "arctos": "/node_modules/arctos/index.mjs" };
+const DEFAULT_IMPORT_MAP = {
+  "atomi": "/node_modules/atomi/index.mjs", "arctos": "/node_modules/arctos/index.mjs"
+};
 
 export let document = null;
 
@@ -17,20 +19,29 @@ export function getDocument() {
 
 // NOTE: intended for internal use of by SSR
 export class _Document {
-  #importmap = {}
-  #title = ""
-  #head = null
-  body = null
-  path = ""
-  lang = "en"
-  clientScripts = []
+  #importmap = {};
+
+  #title = null;
+
+  #head = null;
+
+  body = null;
+
+  path = "";
+
+  lang = "en";
+
+  clientScripts = [];
 
   constructor(path = "") {
     this.body = body({});
     // TODO: default meta tags
     this.path = path;
 
-    this.#importmap = script({ type: "importmap" }, JSON.stringify({ imports: {... DEFAULT_IMPORT_MAP } }));
+    this.#importmap = script(
+      { type: "importmap" },
+      JSON.stringify({ imports: { ...DEFAULT_IMPORT_MAP } })
+    );
     this.#title = title({}, path);
     this.#head = head({}, [this.#importmap, this.#title]);
     this.body = body({});
@@ -67,7 +78,6 @@ export class _Document {
     const current = JSON.parse(this.#importmap.innerText) || {};
     const newImports = Object.assign(current.imports, imports);
     this.#importmap.innerText = JSON.stringify({ imports: newImports });
-    return newImports;
   }
 
   get importmap() {
@@ -103,7 +113,8 @@ export function clientScript(urlOrFuncton) {
     document.clientScripts.push(script({ defer: true, type: "module", src: urlOrFuncton }));
   }
   else {
-    throw new Error(`clientScript(<String>|<Function>) acccepts only arguments of type of string or function`);
+    throw new Error("clientScript(<String>|<Function>) acccepts only arguments of type of string "
+      + "or function");
   }
 }
 
