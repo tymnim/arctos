@@ -1,6 +1,6 @@
 {
   "name": "arctos",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "description": "a javascript framework",
   "main": "index.mjs",
   "types": "types/index.d.mts",
@@ -18,6 +18,6 @@
     "unit-tester": "2.0.1"
   },
   "dependencies": {
-    "atomi": "0.1.5"
+    "atomi": "0.1.6"
   }
 }
