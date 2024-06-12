@@ -1,39 +1,70 @@
+// @ts-check
 import { reactive, ReactiveVar } from "atomi";
-
 import { createElement, createTextNode, Node, Text } from "./createElement.mjs";
 import { normalize } from "./utils.mjs";
 import { Binder } from "./binder.mjs";
 
-const PropertyNotAttributeList = ["checked", "disabled"];
+/**
+ * @typedef {HTMLElement|string|number|undefined} CleanRenderable
+ * @typedef {CleanRenderable
+ *  | CleanRenderable[]
+ *  | Promise<CleanRenderable>
+ *  | Promise<CleanRenderable[]>
+ *  | {dom:RenderableChild}
+ *  | function():RenderableChild} RenderableChild
+ */
+
+const PropertyNotAttributeList = ["checked", "disabled", "open"];
+
 const specialAttributes = {
+  /**
+   * @param {Object}  classes
+   * @param {HTMLElement}    node
+   * @returns {string}
+   */
   class: (classes, node) => {
     if (classes.constructor === Object) {
       // NOTE: detected a class map;
       return Object.entries(classes)
-      .filter(([classname, condition]) => {
-        if (condition instanceof Function) {
-          return condition();
-        }
-        return condition;
-      }).map((entry) => entry[0])
-      .join(" ");
+        .filter(([_classname, condition]) => {
+          if (condition instanceof Function) {
+            return condition();
+          }
+          return condition;
+        }).map(entry => entry[0])
+        .join(" ");
     }
     return classes;
   }
-}
+};
 
-export function reuse(node, attributes, ...children) {
+/**
+ * @param {HTMLElement} node
+ * @param {Object} attributes
+ * @param {RenderableChild} children
+ */
+export function reuse(node, attributes, children) {
   return element("", [attributes, children], node);
 }
 
-export function element(tagName, [attributes = {}, children = []], existingNode) {
+/**
+ * @param {string}          tagName
+ * @param {Object}          attributes
+ * @param {RenderableChild} children
+ * @param {HTMLElement}            [existingNode]
+ */
+export function element(tagName, attributes = {}, children = [], existingNode) {
   const node = existingNode || createElement(tagName);
 
   applyEvents(node, attributes.on);
   applyAttributes(node, attributes);
 
-  const { space } = reactive((scope) => {
-    scope.space.content = replaceChildrenOf(node, normalize(children).filter(child => child !== undefined));
+  // @ts-ignore
+  const { space } = reactive(scope => {
+    scope.space.content = replaceChildrenOf(
+      node,
+      normalize(children).filter(child => child !== undefined)
+    );
   });
 
   if (space.content instanceof Promise) {
@@ -46,6 +77,10 @@ export function element(tagName, [attributes = {}, children = []], existingNode)
   return node;
 }
 
+/**
+ * @prop {HTMLElement} node
+ * @prop {Object?} eventMap
+ */
 function applyEvents(node, eventMap = {}) {
   for (let [event, listener] of Object.entries(eventMap)) {
     // TODO: think if should allow listener be an array.
@@ -56,7 +91,8 @@ function applyEvents(node, eventMap = {}) {
 }
 
 /**
- * @param {(string|function|Promise)} value
+ * @param {(string|function|Promise|Binder)} value
+ * @returns string|Promise
  */
 function unwrapAttribute(value) {
   if (value instanceof Function) {
@@ -72,7 +108,7 @@ function unwrapAttribute(value) {
 }
 
 /**
- * @param {node}    node
+ * @param {HTMLElement}    node
  * @param {string}  attr
  * @param {string}  value
 */
@@ -87,9 +123,9 @@ function applyUnwrapedAttribute(node, attr, value) {
 }
 
 /**
- * @param {node}              node
- * @param {string}            attr
- * @param {(string|function)} value
+ * @param {HTMLElement}                      node
+ * @param {string}                    attr
+ * @param {(string|function|Binder)}  value
 */
 function applyAttribute(node, attr, value) {
   // TODO: accept promises as attribute values
@@ -104,9 +140,9 @@ function applyAttribute(node, attr, value) {
 }
 
 /**
- * @param {Node}              node
+ * @param {HTMLElement}              node
  * @param {string}            attr
- * @param {(string|function|ReactiveVar)} value
+ * @param {(string|function|Binder)} value
  */
 function bindAttribute(node, attr, value) {
   reactive(async scope => {
@@ -129,13 +165,22 @@ function bindAttribute(node, attr, value) {
   }
 }
 
+/**
+ * @param {HTMLElement}    node
+ * @param {Object}  attributes
+ */
 function applyAttributes(node, { on, ...attributes }) {
-  // NOTE: ignoring 'on' attribute since it's used not as an attrinute, but a way to provide event listeners;
+  // NOTE: ignoring 'on' attribute since it's used not as an attribute,
+  //       but a way to provide event listeners;
   Object.entries(attributes)
   .reduce(parseAttribute, [])
   .forEach(([attribute, values]) => bindAttribute(node, attribute, values));
 }
 
+/**
+ * @param {[string, string][]} attributes
+ * @param {[string, string]}   nameValuePair
+ */
 function parseAttribute(attributes = [], [name, value]) {
   // NOTE: aria and data a special cases and can be nested
   if (name === "aria" || name === "data") {
@@ -144,6 +189,12 @@ function parseAttribute(attributes = [], [name, value]) {
   return attributes.concat([[name, value]]);
 }
 
+/*
+ * @param {HTMLElement} node (mutates)
+ * @param {RenderableChild[]} children
+ *
+ * @returns {HTMLElement}
+ */
 function replaceChildrenOf(node, children) {
   let allKids = [];
   for (let child of children) {
@@ -154,28 +205,26 @@ function replaceChildrenOf(node, children) {
   if (allKids.some(kid => kid instanceof Promise)) {
     return new Promise(resolve => {
       Promise.all(allKids).then(kids => {
-        while (node.firstChild) { node.removeChild(node.lastChild) }
+        while (node.firstChild) {
+          node.removeChild(node.lastChild);
+        }
         node.append(...kids.filter(child => child !== undefined));
         resolve(node);
       });
     });
   }
 
-  while (node.firstChild) { node.removeChild(node.lastChild) }
+  while (node.firstChild) {
+    node.removeChild(node.lastChild);
+  }
   node.append(...allKids.filter(child => child !== undefined));
   return node;
 }
 
-// children are:
-//
-// 1. Rendered HTML element
-// 2. Array of rendered HTML elements
-// 3. Component (promise)
-// 4. Array of Components (promises)
-// 5. Function ?
-// 6. child: String - createTextNode(child)
-//
-
+/*
+ * @param {RenderableChild[]} child
+ * @returns {HTMLElement | HTMLElement[]}
+ */
 function renderChild(child) {
   if (child instanceof Node) {
     return child;
@@ -187,10 +236,11 @@ function renderChild(child) {
     return renderChild(child());
   }
   if (child instanceof Promise) {
-    return new Promise(async resolve => { resolve(renderChild(await child)) });
+    return new Promise(resolve => child.then(renderChild).then(resolve));
+    // return new Promise(async resolve => resolve(renderChild(await child)));
   }
   if (child instanceof Array) {
-    return child.map(kid => renderChild(kid))
+    return child.map(kid => renderChild(kid));
   }
   if (child !== undefined) {
     return createTextNode(child);

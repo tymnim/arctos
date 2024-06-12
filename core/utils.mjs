@@ -1,17 +1,32 @@
+// @ts-check
 
-export function normalize(children) {
-  return (children instanceof Array ? children : [children])
+/**
+ * @template {any} T
+ * @param {T|T[]} entity
+ * @returns {T[]}
+ */
+export function normalize(entity) {
+  return (entity instanceof Array ? entity : [entity]);
 }
 
+/**
+ * @template {any} T
+ * @param {T[]} array
+ * @returns {T|T[]}
+ */
 export function unwrap(array) {
   return array.length > 1 ? array : array[0];
 }
 
+/**
+ * Used to focus elements
+ * @param {HTMLElement} element
+ */
 export function focus(element) {
-  if (! element.parentElemet) {
+  if (!element.parentElement) {
     const observer = new MutationObserver(mutations => {
-      mutations.forEach((m) => {
-        m.addedNodes.forEach(node => {
+      mutations.forEach(mutation => {
+        mutation.addedNodes.forEach(node => {
           if (node.contains(element)) {
             element.focus();
             observer.disconnect();

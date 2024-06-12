@@ -2,10 +2,9 @@ import { element } from "./element.mjs";
 import { atom, reactive } from "atomi";
 
 /**
+ * Inteded use is to render lazy render content once the condition is fulfilled;
  * @param {fn => boolean} condition
  * @param {Any}           context
- *
- * Inteded use is to render lazy render content once the condition is fulfilled;
  */
 export function once(condition, content) {
   const [result, setResult] = atom();
@@ -14,332 +13,332 @@ export function once(condition, content) {
       scope.stop();
       setResult(content());
     }
-  })
+  });
   return result;
 }
 
-export function a(...args) {
-  return element("a", args);
+export function a(options, children) {
+  return element("a", options, children);
 }
-export function abbr(...args) {
-  return element("abbr", args);
+export function abbr(options, children) {
+  return element("abbr", options, children);
 }
-export function address(...args) {
-  return element("address", args);
+export function address(options, children) {
+  return element("address", options, children);
 }
-export function area(...args) {
-  return element("area", args);
+export function area(options, children) {
+  return element("area", options, children);
 }
-export function article(...args) {
-  return element("article", args);
+export function article(options, children) {
+  return element("article", options, children);
 }
-export function audio(...args) {
-  return element("audio", args);
+export function audio(options, children) {
+  return element("audio", options, children);
 }
-export function b(...args) {
-  return element("b", args);
+export function b(options, children) {
+  return element("b", options, children);
 }
-export function base(...args) {
-  return element("base", args);
+export function base(options, children) {
+  return element("base", options, children);
 }
-export function bdi(...args) {
-  return element("bdi", args);
+export function bdi(options, children) {
+  return element("bdi", options, children);
 }
-export function bdo(...args) {
-  return element("bdo", args);
+export function bdo(options, children) {
+  return element("bdo", options, children);
 }
-export function blockquote(...args) {
-  return element("blockquote", args);
+export function blockquote(options, children) {
+  return element("blockquote", options, children);
 }
-export function body(...args) {
-  return element("body", args);
+export function body(options, children) {
+  return element("body", options, children);
 }
-export function br(...args) {
-  return element("br", args);
+export function br(options, children) {
+  return element("br", options, children);
 }
-export function button(...args) {
-  return element("button", args);
+export function button(options, children) {
+  return element("button", options, children);
 }
-export function canvas(...args) {
-  return element("canvas", args);
+export function canvas(options, children) {
+  return element("canvas", options, children);
 }
-export function caption(...args) {
-  return element("caption", args);
+export function caption(options, children) {
+  return element("caption", options, children);
 }
-export function cite(...args) {
-  return element("cite", args);
+export function cite(options, children) {
+  return element("cite", options, children);
 }
-export function code(...args) {
-  return element("code", args);
+export function code(options, children) {
+  return element("code", options, children);
 }
-export function col(...args) {
-  return element("col", args);
+export function col(options, children) {
+  return element("col", options, children);
 }
-export function colgroup(...args) {
-  return element("colgroup", args);
+export function colgroup(options, children) {
+  return element("colgroup", options, children);
 }
-export function data(...args) {
-  return element("data", args);
+export function data(options, children) {
+  return element("data", options, children);
 }
-export function datalist(...args) {
-  return element("datalist", args);
+export function datalist(options, children) {
+  return element("datalist", options, children);
 }
-export function dd(...args) {
-  return element("dd", args);
+export function dd(options, children) {
+  return element("dd", options, children);
 }
-export function del(...args) {
-  return element("del", args);
+export function del(options, children) {
+  return element("del", options, children);
 }
-export function details(...args) {
-  return element("details", args);
+export function details(options, children) {
+  return element("details", options, children);
 }
-export function dfn(...args) {
-  return element("dfn", args);
+export function dfn(options, children) {
+  return element("dfn", options, children);
 }
-export function dialog(...args) {
-  return element("dialog", args);
+export function dialog(options, children) {
+  return element("dialog", options, children);
 }
-export function div(...args) {
-  return element("div", args);
+export function div(options, children) {
+  return element("div", options, children);
 }
-export function dl(...args) {
-  return element("dl", args);
+export function dl(options, children) {
+  return element("dl", options, children);
 }
-export function dt(...args) {
-  return element("dt", args);
+export function dt(options, children) {
+  return element("dt", options, children);
 }
-export function em(...args) {
-  return element("em", args);
+export function em(options, children) {
+  return element("em", options, children);
 }
-export function dmbed(...args) {
-  return element("dmbed", args);
+export function dmbed(options, children) {
+  return element("dmbed", options, children);
 }
-export function fieldset(...args) {
-  return element("fieldset", args);
+export function fieldset(options, children) {
+  return element("fieldset", options, children);
 }
-export function figcaption(...args) {
-  return element("figcaption", args);
+export function figcaption(options, children) {
+  return element("figcaption", options, children);
 }
-export function figure(...args) {
-  return element("figure", args);
+export function figure(options, children) {
+  return element("figure", options, children);
 }
-export function footer(...args) {
-  return element("footer", args);
+export function footer(options, children) {
+  return element("footer", options, children);
 }
-export function form(...args) {
-  return element("form", args);
+export function form(options, children) {
+  return element("form", options, children);
 }
-export function h1(...args) {
-  return element("h1", args);
+export function h1(options, children) {
+  return element("h1", options, children);
 }
-export function h2(...args) {
-  return element("h2", args);
+export function h2(options, children) {
+  return element("h2", options, children);
 }
-export function h3(...args) {
-  return element("h3", args);
+export function h3(options, children) {
+  return element("h3", options, children);
 }
-export function h4(...args) {
-  return element("h4", args);
+export function h4(options, children) {
+  return element("h4", options, children);
 }
-export function h5(...args) {
-  return element("h5", args);
+export function h5(options, children) {
+  return element("h5", options, children);
 }
-export function h6(...args) {
-  return element("h6", args);
+export function h6(options, children) {
+  return element("h6", options, children);
 }
-export function head(...args) {
-  return element("head", args);
+export function head(options, children) {
+  return element("head", options, children);
 }
-export function header(...args) {
-  return element("header", args);
+export function header(options, children) {
+  return element("header", options, children);
 }
-export function hr(...args) {
-  return element("hr", args);
+export function hr(options, children) {
+  return element("hr", options, children);
 }
-export function html(...args) {
-  return element("html", args);
+export function html(options, children) {
+  return element("html", options, children);
 }
-export function i(...args) {
-  return element("i", args);
+export function i(options, children) {
+  return element("i", options, children);
 }
-export function iframe(...args) {
-  return element("iframe", args);
+export function iframe(options, children) {
+  return element("iframe", options, children);
 }
-export function img(...args) {
-  return element("img", args);
+export function img(options, children) {
+  return element("img", options, children);
 }
-export function input(...args) {
-  return element("input", args);
+export function input(options, children) {
+  return element("input", options, children);
 }
-export function ins(...args) {
-  return element("ins", args);
+export function ins(options, children) {
+  return element("ins", options, children);
 }
-export function kbd(...args) {
-  return element("kbd", args);
+export function kbd(options, children) {
+  return element("kbd", options, children);
 }
-export function label(...args) {
-  return element("label", args);
+export function label(options, children) {
+  return element("label", options, children);
 }
-export function legend(...args) {
-  return element("legend", args);
+export function legend(options, children) {
+  return element("legend", options, children);
 }
-export function li(...args) {
-  return element("li", args);
+export function li(options, children) {
+  return element("li", options, children);
 }
-export function link(...args) {
-  return element("link", args);
+export function link(options, children) {
+  return element("link", options, children);
 }
-export function main(...args) {
-  return element("main", args);
+export function main(options, children) {
+  return element("main", options, children);
 }
-export function map(...args) {
-  return element("map", args);
+export function map(options, children) {
+  return element("map", options, children);
 }
-export function mark(...args) {
-  return element("mark", args);
+export function mark(options, children) {
+  return element("mark", options, children);
 }
-export function meta(...args) {
-  return element("meta", args);
+export function meta(options, children) {
+  return element("meta", options, children);
 }
-export function meter(...args) {
-  return element("meter", args);
+export function meter(options, children) {
+  return element("meter", options, children);
 }
-export function nav(...args) {
-  return element("nav", args);
+export function nav(options, children) {
+  return element("nav", options, children);
 }
-export function noscript(...args) {
-  return element("noscript", args);
+export function noscript(options, children) {
+  return element("noscript", options, children);
 }
-export function object(...args) {
-  return element("object", args);
+export function object(options, children) {
+  return element("object", options, children);
 }
-export function ol(...args) {
-  return element("ol", args);
+export function ol(options, children) {
+  return element("ol", options, children);
 }
-export function optgroup(...args) {
-  return element("optgroup", args);
+export function optgroup(options, children) {
+  return element("optgroup", options, children);
 }
-export function option(...args) {
-  return element("option", args);
+export function option(options, children) {
+  return element("option", options, children);
 }
-export function output(...args) {
-  return element("output", args);
+export function output(options, children) {
+  return element("output", options, children);
 }
-export function p(...args) {
-  return element("p", args);
+export function p(options, children) {
+  return element("p", options, children);
 }
-export function param(...args) {
-  return element("param", args);
+export function param(options, children) {
+  return element("param", options, children);
 }
-export function picture(...args) {
-  return element("picture", args);
+export function picture(options, children) {
+  return element("picture", options, children);
 }
-export function pre(...args) {
-  return element("pre", args);
+export function pre(options, children) {
+  return element("pre", options, children);
 }
-export function progress(...args) {
-  return element("progress", args);
+export function progress(options, children) {
+  return element("progress", options, children);
 }
-export function q(...args) {
-  return element("q", args);
+export function q(options, children) {
+  return element("q", options, children);
 }
-export function rp(...args) {
-  return element("rp", args);
+export function rp(options, children) {
+  return element("rp", options, children);
 }
-export function rt(...args) {
-  return element("rt", args);
+export function rt(options, children) {
+  return element("rt", options, children);
 }
-export function ruby(...args) {
-  return element("ruby", args);
+export function ruby(options, children) {
+  return element("ruby", options, children);
 }
-export function s(...args) {
-  return element("s", args);
+export function s(options, children) {
+  return element("s", options, children);
 }
-export function samp(...args) {
-  return element("samp", args);
+export function samp(options, children) {
+  return element("samp", options, children);
 }
-export function script(...args) {
-  return element("script", args);
+export function script(options, children) {
+  return element("script", options, children);
 }
-export function section(...args) {
-  return element("section", args);
+export function section(options, children) {
+  return element("section", options, children);
 }
-export function select(...args) {
-  return element("select", args);
+export function select(options, children) {
+  return element("select", options, children);
 }
-export function small(...args) {
-  return element("small", args);
+export function small(options, children) {
+  return element("small", options, children);
 }
-export function source(...args) {
-  return element("source", args);
+export function source(options, children) {
+  return element("source", options, children);
 }
-export function span(...args) {
-  return element("span", args);
+export function span(options, children) {
+  return element("span", options, children);
 }
-export function strong(...args) {
-  return element("strong", args);
+export function strong(options, children) {
+  return element("strong", options, children);
 }
-export function style(...args) {
-  return element("style", args);
+export function style(options, children) {
+  return element("style", options, children);
 }
-export function sub(...args) {
-  return element("sub", args);
+export function sub(options, children) {
+  return element("sub", options, children);
 }
-export function summary(...args) {
-  return element("summary", args);
+export function summary(options, children) {
+  return element("summary", options, children);
 }
-export function sup(...args) {
-  return element("sup", args);
+export function sup(options, children) {
+  return element("sup", options, children);
 }
-export function svg(...args) {
-  return element("svg", args);
+export function svg(options, children) {
+  return element("svg", options, children);
 }
-export function table(...args) {
-  return element("table", args);
+export function table(options, children) {
+  return element("table", options, children);
 }
-export function tbody(...args) {
-  return element("tbody", args);
+export function tbody(options, children) {
+  return element("tbody", options, children);
 }
-export function td(...args) {
-  return element("td", args);
+export function td(options, children) {
+  return element("td", options, children);
 }
-export function template(...args) {
-  return element("template", args);
+export function template(options, children) {
+  return element("template", options, children);
 }
-export function textarea(...args) {
-  return element("textarea", args);
+export function textarea(options, children) {
+  return element("textarea", options, children);
 }
-export function tfoot(...args) {
-  return element("tfoot", args);
+export function tfoot(options, children) {
+  return element("tfoot", options, children);
 }
-export function th(...args) {
-  return element("th", args);
+export function th(options, children) {
+  return element("th", options, children);
 }
-export function thead(...args) {
-  return element("thead", args);
+export function thead(options, children) {
+  return element("thead", options, children);
 }
-export function time(...args) {
-  return element("time", args);
+export function time(options, children) {
+  return element("time", options, children);
 }
-export function title(...args) {
-  return element("title", args);
+export function title(options, children) {
+  return element("title", options, children);
 }
-export function tr(...args) {
-  return element("tr", args);
+export function tr(options, children) {
+  return element("tr", options, children);
 }
-export function track(...args) {
-  return element("track", args);
+export function track(options, children) {
+  return element("track", options, children);
 }
-export function u(...args) {
-  return element("u", args);
+export function u(options, children) {
+  return element("u", options, children);
 }
-export function ul(...args) {
-  return element("ul", args);
+export function ul(options, children) {
+  return element("ul", options, children);
 }
-export function video(...args) {
-  return element("video", args);
+export function video(options, children) {
+  return element("video", options, children);
 }
-export function wbr(...args) {
-  return element("wbr", args);
+export function wbr(options, children) {
+  return element("wbr", options, children);
 }
 

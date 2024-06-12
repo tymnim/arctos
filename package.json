@@ -1,17 +1,23 @@
 {
   "name": "arctos",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "description": "a javascript framework",
   "main": "index.mjs",
+  "types": "types/index.d.mts",
   "scripts": {
-    "test": "node_modules/unit-tester/test.mjs test"
+    "test": "node_modules/unit-tester/test.mjs test",
+    "eslint": "node_modules/eslint/bin/eslint.js **/*.mjs",
+    "types": "node_modules/typescript/bin/tsc --allowJs -d --emitDeclarationOnly --lib es2023,dom --target es6 index.mjs --outDir types --moduleResolution nodenext --module nodenext"
   },
   "author": "Tim Nimest <tymnim@gmail.com> (https://tim.nimets.dev)",
   "license": "MIT",
   "devDependencies": {
-    "unit-tester": "1.0.5"
+    "@stylistic/eslint-plugin": "1.6.0",
+    "eslint": "8.56.0",
+    "typescript": "^5.3.3",
+    "unit-tester": "2.0.1"
   },
   "dependencies": {
-    "atomi": "0.1.3"
+    "atomi": "0.1.6"
   }
 }

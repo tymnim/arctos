@@ -1,139 +1,112 @@
 import { div, span, input, ul, li, ol } from "../index.mjs";
 import { atom } from "atomi";
 import assert from "assert";
-import { Tests, Test } from "unit-tester";
 
-function wait(time) { return new Promise(resolve => setTimeout(resolve, time)) }
-String.prototype.in = async function(time) { await wait(time); return this; }
+function wait(time) {
+  return new Promise(resolve => setTimeout(resolve, time));
+}
 
-const divTests = Tests("<div>",
-  Test("simple", () => {
+/**
+ * @template {any} T
+ * @param {T}       data
+ * @param {number}  time
+ * @returns {Promise<T>}
+ */
+async function resolveIn(data, time) {
+  await wait(time);
+  return data;
+}
+
+const divTests = {
+  "simple": () => {
     assert.equal(div().toString(), "<div></div>");
-  }),
-  Test("classes", () => {
-    assert.equal(div({ class: "my-div" }).toString(), `<div class="my-div"></div>`);
-  }),
-  Test("div with text", () => {
-    assert.equal(div({ id: "unique" }, "I am a div").toString(), `<div id="unique">I am a div</div>`);
-  }),
-  Test("div with children", () => {
+  },
+  "classes": () => {
+    assert.equal(div({ class: "my-div" }).toString(), "<div class=\"my-div\"></div>");
+  },
+  "div with text": () => {
+    assert.equal(div({ id: "unique" }, "I am a div").toString(),
+      "<div id=\"unique\">I am a div</div>");
+  },
+  "div with children": () => {
     const element = div({}, [
       span({}, "hi"),
       span({}, "!")
     ]);
-    assert.equal(element.toString(), `<div><span>hi</span><span>!</span></div>`);
-  }),
-  Test("div with some async children", async () => {
+    assert.equal(element.toString(), "<div><span>hi</span><span>!</span></div>");
+  },
+  "div with some async children": async () => {
     const element = await div({}, [
-      span({}, "hi".in(50)),
-      span({}, ", ".in(800)),
-      span({}, "Tim".in(300)),
-      span({}, "!".in(100))
+      span({}, resolveIn("hi", 50)),
+      span({}, resolveIn(", ", 800)),
+      span({}, resolveIn("Tim", 300)),
+      span({}, resolveIn("!", 100))
     ]);
-    assert.equal(element.toString(), `<div><span>hi</span><span>, </span><span>Tim</span><span>!</span></div>`);
-  })
-);
+    assert.equal(element.toString(),
+      "<div><span>hi</span><span>, </span><span>Tim</span><span>!</span></div>");
+  }
+};
 
-const spanTests = Tests("<span>",
-  Test("classes", () => {
-    assert.equal(span({ class: "my-span" }, "I am a span").toString(), `<span class="my-span">I am a span</span>`);
-  }),
-  Test("async", async () => {
-    const sp = await span({}, "hello world".in(100));
+const spanTests = {
+  "classes": () => {
+    assert.equal(span({ class: "my-span" }, "I am a span").toString(),
+      "<span class=\"my-span\">I am a span</span>");
+  },
+  "async": async () => {
+    const sp = await span({}, resolveIn("hello world", 100));
 
     assert.equal("<span>hello world</span>", sp.toString());
-  }),
-  Test("reactive argument update", async () => {
+  },
+  "reactive argument update": async () => {
     const [spanClass, setSpanClass] = atom("there-span");
     const sp = span({ class: spanClass });
-    assert.equal(`<span class="there-span"></span>`, sp.toString());
+    assert.equal("<span class=\"there-span\"></span>", sp.toString());
     await setSpanClass("their-span");
-    assert.equal(`<span class="their-span"></span>`, sp.toString());
-  }),
-);
+    assert.equal("<span class=\"their-span\"></span>", sp.toString());
+  }
+};
 
-const inputTests = Tests("<input>",
-  Test("reactive value update", async () => {
+const inputTests = {
+  "reactive value update": async () => {
     const [value, setValue] = atom("");
     const inputElement = input({ value });
-    assert.equal(inputElement.toString(), `<input value="">`);
-    setValue("hello");
-    await wait(100);
-    assert.equal(inputElement.toString(), `<input value="hello">`);
-
-  }),
-  Test("[type='checkbox']", async () => {
+    assert.equal(inputElement.toString(), "<input value=\"\">");
+    await setValue("hello");
+    assert.equal(inputElement.toString(), "<input value=\"hello\">");
+  },
+  "[type='checkbox']": async () => {
     const [checked, setChecked] = atom(false);
     const inputElement = input({ type: "checkbox", checked: checked });
-    assert.equal(inputElement.toString(), `<input type="checkbox" checked="false">`);
-    setChecked(true);
-    await wait(100);
-    assert.equal(inputElement.toString(), `<input type="checkbox" checked="true">`);
-  })
-);
+    assert.equal(inputElement.toString(), "<input type=\"checkbox\" checked=\"false\">");
+    await setChecked(true);
+    assert.equal(inputElement.toString(), "<input type=\"checkbox\" checked=\"true\">");
+  }
+};
 
-const attributeTests = Tests("Attribute Tests",
-  Test("string", async () => {
-    const element = div({ class: "container" });
-    assert.equal(element.toString(), `<div class="container"></div>`);
-  }),
-  Test("function -> string", async () => {
-    const element = div({ class: () => "container" });
-    assert.equal(element.toString(), `<div class="container"></div>`);
-  }),
-  Test("atom", async () => {
-    const [className, setClassName] = atom("container");
-    const element = div({ class: className });
-    assert.equal(element.toString(), `<div class="container"></div>`);
-    await setClassName("container-1");
-    assert.equal(element.toString(), `<div class="container-1"></div>`);
-  }),
-  Test("Promise", async () => {
-    const element = await div({ class: wait(100).then(() => "container") });
-    await wait(200);
-    assert.equal(element.toString(), `<div class="container"></div>`);
-  }),
-  Test("function -> Promise", async () => {
-    const element = await div({ class: () => wait(100).then(() => "container") });
-    await wait(200);
-    assert.equal(element.toString(), `<div class="container"></div>`);
-  }),
-  Test("bind", async () => {}),
-  Test("Class map", async () => {
-    const [visible, setVisible] = atom(false);
-    const container = div({ class: { container: true, visible } });
-    assert.equal(container.toString(), `<div class="container"></div>`);
-    await setVisible(true);
-    assert.equal(container.toString(), `<div class="container visible"></div>`);
-    await setVisible(false);
-    assert.equal(container.toString(), `<div class="container"></div>`);
-  }),
-);
-
-export default [
-  divTests,
-  spanTests,
-  inputTests,
-  Tests("<ul>",
-    Test("basic list", () => {
+const elementTests = {
+  "<div>": divTests,
+  "<span>": spanTests,
+  "<input>": inputTests,
+  "<ul>": {
+    "basic list": () => {
       const list = ul();
       assert.equal(list.toString(), "<ul></ul>");
-    }),
-    Test("list with children", () => {
-      const list = ul({}, [1,2,3].map(number => li({}, number)));
+    },
+    "list with children": () => {
+      const list = ul({}, [1, 2, 3].map(number => li({}, number)));
       assert.equal(list.toString(), "<ul><li>1</li><li>2</li><li>3</li></ul>");
-    })
-  ),
-  Tests("<ol>",
-    Test("basic list", () => {
+    }
+  },
+  "<ol>": {
+    "basic list": () => {
       const list = ol();
       assert.equal(list.toString(), "<ol></ol>");
-    }),
-    Test("list with async children", async () => {
-      const list = await ol({}, [1,2,3].map(number => li({}, number.toString().in(200))));
+    },
+    "list with async children": async () => {
+      const list = await ol({}, [1, 2, 3].map(number => li({}, resolveIn(number.toString(), 200))));
       assert.equal(list.toString(), "<ol><li>1</li><li>2</li><li>3</li></ol>");
-    }),
-    Test("list with reactive children (append, remove children)", async () => {
+    },
+    "list with reactive children (append, remove children)": async () => {
       const [children, setChildren] = atom([1, 2, 3]);
       const list = await ol({}, () => children().map(number => li({}, number.toString())));
       assert.equal(list.toString(), "<ol><li>1</li><li>2</li><li>3</li></ol>");
@@ -143,7 +116,49 @@ export default [
       setChildren([1, 2]);
       await wait(100);
       assert.equal(list.toString(), "<ol><li>1</li><li>2</li></ol>");
-    })
-  ),
-  attributeTests
-];
+    }
+  }
+};
+
+const attributeTests = {
+  "string": async () => {
+    const element = div({ class: "container" });
+    assert.equal(element.toString(), "<div class=\"container\"></div>");
+  },
+  "function -> string": async () => {
+    const element = div({ class: () => "container" });
+    assert.equal(element.toString(), "<div class=\"container\"></div>");
+  },
+  "atom": async () => {
+    const [className, setClassName] = atom("container");
+    const element = div({ class: className });
+    assert.equal(element.toString(), "<div class=\"container\"></div>");
+    await setClassName("container-1");
+    assert.equal(element.toString(), "<div class=\"container-1\"></div>");
+  },
+  "Promise": async () => {
+    const element = await div({ class: wait(100).then(() => "container") });
+    await wait(200);
+    assert.equal(element.toString(), "<div class=\"container\"></div>");
+  },
+  "function -> Promise": async () => {
+    const element = await div({ class: () => wait(100).then(() => "container") });
+    await wait(200);
+    assert.equal(element.toString(), "<div class=\"container\"></div>");
+  },
+  "bind": async () => {},
+  "Class map": async () => {
+    const [visible, setVisible] = atom(false);
+    const container = div({ class: { container: true, visible } });
+    assert.equal(container.toString(), "<div class=\"container\"></div>");
+    await setVisible(true);
+    assert.equal(container.toString(), "<div class=\"container visible\"></div>");
+    await setVisible(false);
+    assert.equal(container.toString(), "<div class=\"container\"></div>");
+  }
+};
+
+export default {
+  "Element Tests": elementTests,
+  "Attrbute Tests": attributeTests
+};
