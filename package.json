@@ -1,6 +1,6 @@
 {
   "name": "arctos",
-  "version": "0.0.6",
+  "version": "0.1.0",
   "description": "a javascript framework",
   "main": "index.mjs",
   "types": "types/index.d.mts",
