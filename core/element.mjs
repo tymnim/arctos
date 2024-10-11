@@ -17,15 +17,18 @@ import { onMount, onUnmount } from "./mountHooks.mjs";
  * @typedef {any} RenderableChild
  */
 
-const PropertyNotAttributeList = ["checked", "disabled", "open"];
+const PropertyNotAttributeList = [
+  "checked", "disabled", "open", "value", "tabIndex", "selected",
+  "maxLength"
+];
 
 const specialAttributes = {
   /**
-   * @param {Object}      classes
+   * @param {Object|""}      classes
    * @param {HTMLElement} node
    * @returns {string}
    */
-  class: (classes, node) => {
+  class: (classes = "", node) => {
     if (classes.constructor === Object) {
       // NOTE: detected a class map;
       return Object.entries(classes)
@@ -60,9 +63,6 @@ export function reuse(node, attributes, children) {
 export function element(tagName, attributes = {}, children = [], hooks = {}, existingNode) {
   const node = existingNode || createElement(tagName);
 
-  applyEvents(node, attributes.on);
-  applyAttributes(node, attributes);
-  applyHooks(node, hooks);
 
   // @ts-ignore
   const scope = reactive(scope => {
@@ -72,6 +72,9 @@ export function element(tagName, attributes = {}, children = [], hooks = {}, exi
     );
     return scope.space.content;
   });
+  applyEvents(node, attributes.on);
+  applyAttributes(node, attributes);
+  applyHooks(node, hooks);
 
   if (scope instanceof Promise) {
     return new Promise(async resolve => {

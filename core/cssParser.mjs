@@ -206,7 +206,7 @@ export function importFromFile(src) {
 
 /**
  * @param {TemplateStringsArray} strs
- * @param {...any[]}             args
+ * @param {...any}               args
  * @returns {Object.<string, string>}
  */
 export function importCss(strs, ...args) {
