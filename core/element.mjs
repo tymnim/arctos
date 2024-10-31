@@ -63,7 +63,6 @@ export function reuse(node, attributes, children) {
 export function element(tagName, attributes = {}, children = [], hooks = {}, existingNode) {
   const node = existingNode || createElement(tagName);
 
-
   // @ts-ignore
   const scope = reactive(scope => {
     scope.space.content = replaceChildrenOf(
