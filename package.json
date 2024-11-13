@@ -1,19 +1,22 @@
 {
   "name": "arctos",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "a javascript framework",
-  "main": "index.mjs",
+  "main": "dist/bundle.mjs",
   "types": "types/index.d.mts",
   "scripts": {
+    "build": "rollup -c rollup.config.mjs",
     "test": "node_modules/unit-tester/test.mjs test",
-    "eslint": "node_modules/eslint/bin/eslint.js **/*.mjs",
+    "eslint": "node_modules/eslint/bin/eslint.js **/*.mjs --ignore-pattern 'dist/*'",
     "types": "node_modules/typescript/bin/tsc --allowJs -d --emitDeclarationOnly --lib es2023,dom --target es6 index.mjs --outDir types --moduleResolution nodenext --module nodenext"
   },
   "author": "Tim Nimest <tymnim@gmail.com> (https://tim.nimets.dev)",
   "license": "MIT",
   "devDependencies": {
+    "@rollup/plugin-terser": "0.4.4",
     "@stylistic/eslint-plugin": "1.6.0",
     "eslint": "8.56.0",
+    "rollup": "^4.26.0",
     "typescript": "5.3.3",
     "unit-tester": "2.0.1"
   },
