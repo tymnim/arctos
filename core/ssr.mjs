@@ -7,6 +7,7 @@ export class Node {
 
   #tag = "";
 
+  /** @type {HTMLElement[]} */
   #children = [];
 
   #attributes = {};

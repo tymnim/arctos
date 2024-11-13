@@ -29,6 +29,9 @@ const specialAttributes = {
    * @returns {string}
    */
   class: (classes = "", node) => {
+    if (classes instanceof Array) {
+      return classes.join(" ");
+    }
     if (classes.constructor === Object) {
       // NOTE: detected a class map;
       return Object.entries(classes)
@@ -48,9 +51,10 @@ const specialAttributes = {
  * @param {HTMLElement} node
  * @param {Object} attributes
  * @param {RenderableChild} children
+ * @param {Object}          hooks
  */
-export function reuse(node, attributes, children) {
-  return element("", [attributes, children], node);
+export function reuse(node, attributes, children, hooks) {
+  return element("", attributes, children, hooks, node);
 }
 
 /**
@@ -76,10 +80,7 @@ export function element(tagName, attributes = {}, children = [], hooks = {}, exi
   applyHooks(node, hooks);
 
   if (scope instanceof Promise) {
-    return new Promise(async resolve => {
-      await scope;
-      resolve(node);
-    });
+    return scope.then(() => node);
   }
 
   return node;
@@ -102,8 +103,8 @@ function applyHooks(node, { mount, unmount }) {
 }
 
 /**
- * @prop {HTMLElement} node
- * @prop {Object?} eventMap
+ * @param {HTMLElement} node
+ * @param {Object?} eventMap
  */
 function applyEvents(node, eventMap = {}) {
   for (let [event, listener] of Object.entries(eventMap)) {
@@ -116,7 +117,7 @@ function applyEvents(node, eventMap = {}) {
 
 /**
  * @param {(string|function|Promise|Binder)} value
- * @returns string|Promise
+ * @returns {string|Promise}
  */
 function unwrapAttribute(value) {
   if (value instanceof Function) {
