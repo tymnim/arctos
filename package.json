@@ -5,6 +5,8 @@
   "main": "dist/bundle.mjs",
   "types": "types/index.d.mts",
   "scripts": {
+    "dev": "rollup -c rollup.config.mjs -w",
+    "prepare": "npm run test && npm run eslint && npm run types && npm run build",
     "build": "rollup -c rollup.config.mjs",
     "test": "node_modules/unit-tester/test.mjs test",
     "eslint": "node_modules/eslint/bin/eslint.js **/*.mjs --ignore-pattern 'dist/*'",
