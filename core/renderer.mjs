@@ -13,7 +13,11 @@ async function renderer(...components) {
   }
 }
 
-Object.defineProperty(Node.prototype, render, { get: () => renderer.bind(this) });
+Object.defineProperty(Node.prototype, render, {
+  get() {
+    return renderer.bind(this);
+  }
+});
 
 export function getDocument() {
   if (isSSR) {

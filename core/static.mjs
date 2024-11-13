@@ -4,10 +4,14 @@ const DEFAULT_IMPORT_MAP = {
   "atomi": "/node_modules/atomi/index.mjs", "arctos": "/node_modules/arctos/index.mjs"
 };
 
+/** @type {SSRStaticDocument?} */
 export let document = null;
 
-export function defineDocument(path) {
-  document = new _Document({
+/**
+ * @param {string} [path=""]
+ */
+export function defineDocument(path = "") {
+  document = new SSRStaticDocument({
     path
   });
   return document;
@@ -18,7 +22,7 @@ export function getDocument() {
 }
 
 // NOTE: intended for internal use of by SSR
-export class _Document {
+export class SSRStaticDocument {
   #importmap = {};
 
   #title = null;
@@ -33,7 +37,7 @@ export class _Document {
 
   clientScripts = [];
 
-  constructor(path = "") {
+  constructor({ path = "" } = {}) {
     this.body = body({});
     // TODO: default meta tags
     this.path = path;
@@ -87,7 +91,13 @@ export class _Document {
 }
 
 /**
- * @param config: { lang, title, importmap, head, body }
+ * @param {{
+ *    lang?: string,
+ *    title?: string,
+ *    importmap?: Object,
+ *    head?: HTMLElement,
+ *    body?: HTMLElement
+ * }} config
  * @return document
  **/
 export function Document(config) {

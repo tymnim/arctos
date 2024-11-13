@@ -1,8 +1,9 @@
 // @ts-check
-import { reactive, ReactiveVar } from "atomi";
+import { reactive, ReactiveVar, guard } from "atomi";
 import { createElement, createTextNode, Node, Text } from "./createElement.mjs";
 import { normalize } from "./utils.mjs";
 import { Binder } from "./binder.mjs";
+import { onMount, onUnmount } from "./mountHooks.mjs";
 
 /**
  * @typedef {HTMLElement|string|number|undefined} CleanRenderable
@@ -10,25 +11,33 @@ import { Binder } from "./binder.mjs";
  *  | CleanRenderable[]
  *  | Promise<CleanRenderable>
  *  | Promise<CleanRenderable[]>
- *  | {dom:RenderableChild}
- *  | function():RenderableChild} RenderableChild
+ *  | {dom:Renderable}
+ *  | function():Renderable
+ *  | function():Renderable[]} Renderable
+ * @typedef {any} RenderableChild
  */
 
-const PropertyNotAttributeList = ["checked", "disabled", "open"];
+const PropertyNotAttributeList = [
+  "checked", "disabled", "open", "value", "tabIndex", "selected",
+  "maxLength"
+];
 
 const specialAttributes = {
   /**
-   * @param {Object}  classes
-   * @param {HTMLElement}    node
+   * @param {Object|""}      classes
+   * @param {HTMLElement} node
    * @returns {string}
    */
-  class: (classes, node) => {
+  class: (classes = "", node) => {
+    if (classes instanceof Array) {
+      return classes.join(" ");
+    }
     if (classes.constructor === Object) {
       // NOTE: detected a class map;
       return Object.entries(classes)
         .filter(([_classname, condition]) => {
           if (condition instanceof Function) {
-            return condition();
+            return guard(condition);
           }
           return condition;
         }).map(entry => entry[0])
@@ -42,44 +51,60 @@ const specialAttributes = {
  * @param {HTMLElement} node
  * @param {Object} attributes
  * @param {RenderableChild} children
+ * @param {Object}          hooks
  */
-export function reuse(node, attributes, children) {
-  return element("", [attributes, children], node);
+export function reuse(node, attributes, children, hooks) {
+  return element("", attributes, children, hooks, node);
 }
 
 /**
  * @param {string}          tagName
- * @param {Object}          attributes
- * @param {RenderableChild} children
- * @param {HTMLElement}            [existingNode]
+ * @param {Object}          [attributes={}]
+ * @param {RenderableChild} [children=[]]
+ * @param {HTMLElement}     [existingNode]
+ * @returns {HTMLElement|Promise<HTMLElement>}
  */
-export function element(tagName, attributes = {}, children = [], existingNode) {
+export function element(tagName, attributes = {}, children = [], hooks = {}, existingNode) {
   const node = existingNode || createElement(tagName);
 
-  applyEvents(node, attributes.on);
-  applyAttributes(node, attributes);
-
   // @ts-ignore
-  const { space } = reactive(scope => {
+  const scope = reactive(scope => {
     scope.space.content = replaceChildrenOf(
       node,
       normalize(children).filter(child => child !== undefined)
     );
+    return scope.space.content;
   });
+  applyEvents(node, attributes.on);
+  applyAttributes(node, attributes);
+  applyHooks(node, hooks);
 
-  if (space.content instanceof Promise) {
-    return new Promise(async resolve => {
-      await space.content;
-      resolve(node);
-    });
+  if (scope instanceof Promise) {
+    return scope.then(() => node);
   }
 
   return node;
 }
 
 /**
- * @prop {HTMLElement} node
- * @prop {Object?} eventMap
+ * @param {HTMLElement}                node
+ * @param {Object}                     hooks
+ * @param {function(HTMLElement):void} [hooks.mount]
+ * @param {function(HTMLElement):void} [hooks.unmount]
+ */
+function applyHooks(node, { mount, unmount }) {
+  if (mount) {
+    onMount(node, mount);
+  }
+  if (unmount) {
+    onUnmount(node, unmount);
+  }
+  return node;
+}
+
+/**
+ * @param {HTMLElement} node
+ * @param {Object?} eventMap
  */
 function applyEvents(node, eventMap = {}) {
   for (let [event, listener] of Object.entries(eventMap)) {
@@ -92,7 +117,7 @@ function applyEvents(node, eventMap = {}) {
 
 /**
  * @param {(string|function|Promise|Binder)} value
- * @returns string|Promise
+ * @returns {string|Promise}
  */
 function unwrapAttribute(value) {
   if (value instanceof Function) {
@@ -205,19 +230,13 @@ function replaceChildrenOf(node, children) {
   if (allKids.some(kid => kid instanceof Promise)) {
     return new Promise(resolve => {
       Promise.all(allKids).then(kids => {
-        while (node.firstChild) {
-          node.removeChild(node.lastChild);
-        }
-        node.append(...kids.filter(child => child !== undefined));
+        node.replaceChildren(...kids.filter(child => child !== undefined));
         resolve(node);
       });
     });
   }
 
-  while (node.firstChild) {
-    node.removeChild(node.lastChild);
-  }
-  node.append(...allKids.filter(child => child !== undefined));
+  node.replaceChildren(...allKids.filter(child => child !== undefined));
   return node;
 }
 

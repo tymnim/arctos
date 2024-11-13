@@ -7,6 +7,7 @@ export class Node {
 
   #tag = "";
 
+  /** @type {HTMLElement[]} */
   #children = [];
 
   #attributes = {};
@@ -20,7 +21,7 @@ export class Node {
     Object.assign(
       attributes,
       Object.getOwnPropertyNames(this)
-      .reduce((acc, prop) => Object.assign(acc, { [prop]: this[prop] }))
+      .reduce((acc, prop) => Object.assign(acc, { [prop]: this[prop] }), {})
     );
     const apply = (attrs, prefix) => Object.entries(attrs)
       .map(([name, value]) => `${prefix ? prefix + "_" : ""}${name}="${value}"`)
@@ -88,6 +89,12 @@ export class Node {
 
   append(...children) {
     this.#children = this.#children.concat(children);
+    children.forEach(child => child.setParent(this));
+    return this;
+  }
+
+  replaceChildren(...children) {
+    this.#children = children;
     children.forEach(child => child.setParent(this));
     return this;
   }

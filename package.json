@@ -1,6 +1,6 @@
 {
   "name": "arctos",
-  "version": "0.0.6",
+  "version": "0.1.1",
   "description": "a javascript framework",
   "main": "index.mjs",
   "types": "types/index.d.mts",
@@ -14,10 +14,10 @@
   "devDependencies": {
     "@stylistic/eslint-plugin": "1.6.0",
     "eslint": "8.56.0",
-    "typescript": "^5.3.3",
+    "typescript": "5.3.3",
     "unit-tester": "2.0.1"
   },
   "dependencies": {
-    "atomi": "0.1.6"
+    "atomi": "0.2.2"
   }
 }

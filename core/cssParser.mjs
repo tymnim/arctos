@@ -205,8 +205,9 @@ export function importFromFile(src) {
 }
 
 /**
- * @param {string[]} strs
- * @param {...string[]} args
+ * @param {TemplateStringsArray} strs
+ * @param {...any}               args
+ * @returns {Object.<string, string>}
  */
 export function importCss(strs, ...args) {
   const css = [];

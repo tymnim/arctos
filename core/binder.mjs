@@ -1,32 +1,47 @@
 import { ReactiveVar } from "atomi";
 
-const bindmap = {
-  INPUT: {
-    checked: [
-      { types: ["checkbox", "radio"], event: "change" }
-    ],
-    value: [
-      // NOTE: completely ignored:
-      //       type: ["submit", "image", "button", "hidden"], since not sure what to do with them
-      { types: ["text", "number", "password", "email", "range", "search", "tel", "url"],
-        event: "input" },
-      { types: ["date", "color", "datetime-local", "file", "month", "time", "week"],
-        event: "checked" }
-    ]
-  },
-  SELECT: {
-    value: [
-      { event: "change" }
-    ]
-  }
-};
+const BINDMAP = new Map();
 
+implementBindMap("INPUT", {
+  checked: [
+    { types: ["checkbox", "radio"], event: "change" }
+  ],
+  value: [
+    // NOTE: completely ignored:
+    //       type: ["submit", "image", "button", "hidden"], since not sure what to do with them
+    { types: ["text", "number", "password", "email", "range", "search", "tel", "url"],
+      event: "input" },
+    { types: ["date", "color", "datetime-local", "file", "month", "time", "week"],
+      event: "checked" }
+  ]
+});
+
+implementBindMap("SELECT", {
+  value: [
+    { event: "change" }
+  ]
+});
+
+/**
+ * @param {string} nodeName
+ * @param {Object.<string, {types?: string[], event: string}[]>} bindData
+ */
+export function implementBindMap(nodeName, bindData) {
+  const existingData = BINDMAP.get(nodeName) || {};
+  BINDMAP.set(nodeName, Object.assign(existingData, bindData));
+}
+
+/**
+ * @template T
+ */
 export class Binder {
   /**
-   * @param {ReactiveVar} reactiveVar
+   * @param {ReactiveVar<T>} reactiveVar
+   * @param {function(T, T):T} [format]
    */
-  constructor(reactiveVar) {
+  constructor(reactiveVar, format = (x, _) => x) {
     this.atom = reactiveVar;
+    this.format = format;
   }
 
   getValue() {
@@ -38,10 +53,11 @@ export class Binder {
    * @param {Node}   node
    */
   bind(attribute, node) {
-    const binders = bindmap[node.nodeName]?.[attribute];
+    const binders = BINDMAP.get(node.nodeName)?.[attribute];
     if (!binders) {
       // TODO: provide info where to look what elements are bindable
-      throw new Error(`Cannot bind: "${attribute}" on ${node.nodeName.toLowerCase()}.`);
+      throw new Error(`Binding of "${attribute}" is not implemented on `
+        + `${node.nodeName.toLowerCase()}. See \`implementBindMap\` method for more info.`);
     }
 
     const binder = binders.find(binder => {
@@ -51,29 +67,41 @@ export class Binder {
       return binder;
     });
     if (!binder) {
-      throw new Error(`Cannot find a suitable binder for "${attribute}"`
-        + `on ${node.nodeName.toLowerCase()}`);
+      throw new Error(`Cannot find a suitable binder for "${attribute}" `
+        + `on ${node.nodeName.toLowerCase()} [type="${node.type}"]`);
     }
 
     node.addEventListener(binder.event, e => {
       const newValue = e?.currentTarget?.[attribute];
-      this.atom.set(newValue);
+      const currentValue = this.atom.value;
+      this.atom.set(this.format(newValue, currentValue));
     });
   }
 }
 
 /**
- * @typedef {Function & {reactiveVar: ReactiveVar}} AtomicGetter
- *
- * @prop {ReactiveVar} reactiveVar
- *
- * Indicates that attribute can be bound to an atom.
- * @param {AtomicGetter|ReactiveVar} atomicGetter
+ * @template T
+ * @typedef {import("atomi").Atom<T>} Atom
  */
-export function bind(atomicGetter) {
+
+/**
+ * To bind attribute/property value to an atom.
+ *
+ * @example
+ * ```js
+ * const [isChecked, setIsChecked] = atom(false);
+ * input({ type: "checkbox", checked: bind(isChecked) });
+ * ```
+ *
+ * @template {(string|boolean)} T
+ * @param {Atom<T>[0]|ReactiveVar<T>} atomicGetter
+ * @param {function(T, T):T}          [format]     - optional function to be called with new value,
+ *                                                   can be used for formatting or validation.
+ */
+export function bind(atomicGetter, format) {
   if (atomicGetter instanceof ReactiveVar) {
-    return new Binder(atomicGetter);
+    return new Binder(atomicGetter, format);
   }
-  return new Binder(atomicGetter.reactiveVar);
+  return new Binder(atomicGetter.reactiveVar, format);
 }
 
