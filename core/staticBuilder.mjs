@@ -64,7 +64,7 @@ export class StaticBuilder {
   }
 
   /**
-   * Out puts compiled html files into the folder
+   * Outputs compiled html files into the folder
    */
   async output() {
     const outputDir = await mkdir(this.outputPath, { recursive: true });

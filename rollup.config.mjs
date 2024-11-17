@@ -1,5 +1,3 @@
-import terser from "@rollup/plugin-terser";
-
 export default {
   input: "index.mjs",
   output: {
@@ -7,6 +5,5 @@ export default {
     format: "es",
     compact: true
   },
-  external: ["atomi"],
-  plugins: [terser()]
+  external: ["atomi"]
 };
